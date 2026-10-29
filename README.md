@@ -1,268 +1,82 @@
-# Tutorial Setup SiaGa Bencana untuk Anggota Tim
+# SiaGa Bencana
 
-Panduan ini untuk anggota yang baru pertama kali menjalankan proyek SiaGa Bencana di laptopnya. Ikuti dari atas ke bawah. Proyek memakai **Laravel 12**, **PHP 8.2**, dan **MySQL dari XAMPP** (bukan SQLite).
+Aplikasi web untuk membantu pengelolaan dan koordinasi tanggap darurat bencana di wilayah perkotaan. Proyek ini mengangkat **SDG 11 (Sustainable Cities and Communities)**, khususnya target 11.5 dan 11.b.
 
-Aturan branch dan alur kerja lengkap ada di [CONTRIBUTING.md](CONTRIBUTING.md).
+SiaGa Bencana bukan alat prediksi bencana. Fokusnya adalah pengelolaan informasi tanggap darurat: posko dan kapasitasnya, pengungsi, logistik, permintaan kebutuhan mendesak, laporan kejadian bencana beserta verifikasinya, serta dashboard monitoring.
 
----
+Tugas Besar mata kuliah Proyek Perangkat Lunak, Kelompok PPL-SI4807-KELA-A.
 
-## Bagian 1. Pasang alat yang dibutuhkan
+> **Anggota tim:** ikuti [SETUP.md](SETUP.md) langkah demi langkah, mulai dari clone sampai Pull Request. Aturan branch ada di [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Lewati alat yang sudah terpasang.
+## Aktor
 
-### 1.1 XAMPP (PHP 8.2 dan MySQL)
-
-1. Unduh dari https://www.apachefriends.org, pilih versi dengan **PHP 8.2** atau lebih baru.
-2. Pasang ke lokasi bawaan `C:\xampp`.
-3. Buka **XAMPP Control Panel**, lalu klik **Start** pada **Apache** dan **MySQL**.
-
-### 1.2 Aktifkan ekstensi PHP
-
-1. Buka file `C:\xampp\php\php.ini` dengan VS Code atau Notepad.
-2. Cari baris-baris berikut, lalu **hapus tanda titik koma (`;`) di depannya**:
-
-   ```
-   extension=zip
-   extension=pdo_mysql
-   extension=fileinfo
-   extension=mbstring
-   extension=openssl
-   extension=curl
-   ```
-
-3. Simpan file, lalu **Stop** dan **Start** ulang Apache di XAMPP Control Panel.
-
-### 1.3 Git
-
-1. Unduh dari https://git-scm.com/download/win, lalu jalankan installer.
-2. Klik **Next** dengan pilihan bawaan, kecuali:
-   - **Choosing the default editor**: pilih **Use Visual Studio Code as Git's default editor**.
-   - **Adjusting the name of the initial branch**: pilih **Override**, isi `main`.
-3. Atur identitas Git (pakai email yang sama dengan akun GitHub):
-
-   ```bash
-   git config --global user.name "Nama Lengkap Kamu"
-   git config --global user.email "email-github-kamu@contoh.com"
-   ```
-
-### 1.4 Composer
-
-1. Unduh **Composer-Setup.exe** dari https://getcomposer.org/download/.
-2. Pilih **Install for all users**.
-3. Saat diminta lokasi PHP, pilih **`C:\xampp\php\php.exe`** dan centang **Add this PHP to your path**.
-4. Klik **Next** sampai selesai.
-
-### 1.5 Cek instalasi
-
-**Tutup semua jendela VS Code dan terminal (File → Exit), lalu buka lagi.** Setelah itu jalankan:
-
-```bash
-git --version
-php -v
-composer --version
-```
-
-Ketiganya harus menampilkan nomor versi. Kalau ada yang muncul `is not recognized`, lihat bagian **Masalah yang sering muncul** di bawah.
-
----
-
-## Bagian 2. Ambil proyek dari GitHub
-
-Pastikan kamu sudah diundang ke repo **PPL-SI4807-KELA-A/SiaGa-Bencana** dan sudah menerima undangannya (cek email atau notifikasi GitHub).
-
-### Pilihan A: lewat GitHub Desktop
-
-1. **File → Clone repository → URL**.
-2. Isi `https://github.com/PPL-SI4807-KELA-A/SiaGa-Bencana.git`.
-3. Pilih folder penyimpanan, lalu klik **Clone**.
-4. Klik **Open in Visual Studio Code**.
-
-### Pilihan B: lewat terminal
-
-```bash
-cd $env:USERPROFILE\Documents
-git clone https://github.com/PPL-SI4807-KELA-A/SiaGa-Bencana.git
-cd SiaGa-Bencana
-code .
-```
-
-Saat clone pertama kali, akan muncul jendela login GitHub. Login dengan akun GitHub kamu.
-
----
-
-## Bagian 3. Jalankan proyek dengan MySQL
-
-Semua perintah di bawah dijalankan di **terminal VS Code** (Terminal → New Terminal), di dalam folder `SiaGa-Bencana`.
-
-### 3.1 Pasang dependensi Laravel
-
-```bash
-composer install
-```
-
-Tunggu sampai selesai. Folder `vendor` akan muncul.
-
-### 3.2 Buat file `.env`
-
-```bash
-copy .env.example .env
-php artisan key:generate
-```
-
-### 3.3 Atur `.env` agar memakai MySQL
-
-Buka file `.env`, cari bagian database, lalu pastikan isinya seperti ini. Hapus tanda `#` di depan baris kalau ada:
-
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=siaga_bencana
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-> **Jangan pakai `DB_CONNECTION=sqlite`.** Proyek ini memakai MySQL. Kalau di folder `database` ada file `database.sqlite`, abaikan saja.
-
-`DB_PASSWORD` dikosongkan karena user `root` di XAMPP bawaannya tanpa password.
-
-### 3.4 Buat database di phpMyAdmin
-
-1. Pastikan **MySQL** di XAMPP Control Panel berstatus **Running** (hijau).
-2. Buka http://localhost/phpmyadmin di browser.
-3. Klik **New** di sidebar kiri.
-4. Isi nama database `siaga_bencana`, pilih collation **utf8mb4_unicode_ci**, lalu klik **Create**.
-
-### 3.5 Buat tabel dan isi data awal
-
-```bash
-php artisan migrate --seed
-```
-
-Perintah ini membuat semua tabel dan mengisi data awal (akun petugas, posko, kategori bencana, barang) dari seeder Ibnu. Kalau migration Ibnu belum di-merge ke `main`, yang terbentuk baru tabel bawaan Laravel. Itu normal.
-
-Kalau nanti ada migration baru dari Ibnu, jalankan ulang:
-
-```bash
-php artisan migrate
-```
-
-Kalau ingin mengulang database dari nol (semua data hilang):
-
-```bash
-php artisan migrate:fresh --seed
-```
-
-### 3.6 Jalankan aplikasi
-
-```bash
-php artisan serve
-```
-
-Buka http://127.0.0.1:8000 di browser. Kalau halaman Laravel atau halaman SiaGa Bencana muncul, setup berhasil. Tekan **Ctrl + C** di terminal untuk menghentikan server.
-
----
-
-## Bagian 4. Buat branch dengan nama sendiri (sekali saja)
-
-Setiap anggota bekerja di branch dengan namanya sendiri:
-
-| Anggota | Branch |
+| Aktor | Peran singkat |
 | --- | --- |
-| Dhafa | `dhafa` |
-| Amrin | `amrin` |
-| Arkan | `arkan` |
-| Ibnu | `ibnu` |
-| Achmad | `achmad` |
-| Fiqih | `fiqih` |
+| Warga/Pelapor | Tanpa akun. Melaporkan kejadian bencana, mengajukan permintaan kebutuhan mendesak, melacak laporan dengan kode, dan melihat posko aktif, pengumuman, serta kontak layanan darurat. |
+| Relawan Posko | Mengelola fasilitas posko, pengungsi, stok, penerimaan logistik, dan distribusi bantuan di poskonya. |
+| Admin BPBD | Mengelola wilayah, posko, kategori bencana, data barang, pengumuman, dan kontak layanan; memverifikasi laporan dan memantau dashboard seluruh posko. |
 
-### Lewat GitHub Desktop
+## Teknologi
 
-1. Pastikan **Current branch** adalah **main**, lalu klik **Fetch origin** atau **Pull origin**.
-2. Klik **Current branch → New branch**.
-3. Isi nama kamu (misalnya `amrin`), pastikan dibuat dari **main**, lalu klik **Create branch**.
-4. Klik **Publish branch**.
+- Laravel 12 (PHP 8.2 atau lebih baru)
+- Blade, HTML, CSS, JavaScript, Bootstrap
+- MySQL (bukan SQLite)
+- Pengembangan lokal: XAMPP
+- Manajemen Sprint: Jira (proyek DAHIF)
 
-### Lewat terminal
+## Cakupan dan batasan
 
-```bash
-git checkout main
-git pull origin main
-git checkout -b amrin
-git push -u origin amrin
-```
+- Simulasi di Kecamatan Bojongsoang dan Dayeuhkolot, dengan banjir sebagai skenario utama.
+- Web responsif, tanpa aplikasi mobile native.
+- Tanpa prediksi atau peringatan dini, IoT, peta interaktif/GPS, payment gateway, dan integrasi dengan sistem BPBD/BMKG.
+- Notifikasi hanya di dalam aplikasi. Data uji berupa data simulasi.
 
-Ganti `amrin` dengan nama kamu.
+## Product Backlog (18 PBI)
 
----
+| Jira | PBI | PIC | Sprint |
+| --- | --- | --- | --- |
+| DAHIF-1 | Kelola Data Wilayah Terdampak | Dhafa | 1 |
+| DAHIF-2 | Kelola Data Posko Pengungsian | Dhafa | 1 |
+| DAHIF-3 | Kelola Data Pengungsi | Amrin | 1 |
+| DAHIF-4 | Kelola Sumber Bantuan | Arkan | 1 |
+| DAHIF-5 | Kelola Stok Logistik Posko | Ibnu | 1 |
+| DAHIF-6 | Kelola Data Barang Logistik | Achmad | 1 |
+| DAHIF-7 | Kelola Permintaan Kebutuhan Mendesak | Achmad | 1 |
+| DAHIF-8 | Kelola Kategori Bencana | Fiqih | 1 |
+| DAHIF-9 | Kelola Laporan Kejadian Bencana | Fiqih | 1 |
+| DAHIF-10 | Kelola Fasilitas Posko | Dhafa | 2 |
+| DAHIF-11 | Kelola Kondisi Medis Pengungsi | Amrin | 2 |
+| DAHIF-12 | Kelola Kontak Darurat Pengungsi | Amrin | 2 |
+| DAHIF-13 | Kelola Pengumuman Darurat | Arkan | 2 |
+| DAHIF-14 | Kelola Kontak Layanan Darurat | Arkan | 2 |
+| DAHIF-15 | Kelola Penerimaan Logistik | Ibnu | 2 |
+| DAHIF-16 | Kelola Distribusi Bantuan | Ibnu | 2 |
+| DAHIF-17 | Kelola Tindak Lanjut Permintaan | Achmad | 2 |
+| DAHIF-18 | Kelola Verifikasi Laporan | Fiqih | 2 |
 
-## Bagian 5. Alur kerja harian
+Login/logout dan Dashboard Monitoring dikerjakan Dhafa dan tidak dihitung sebagai PBI.
 
-### Setiap mulai kerja
+## Jadwal
 
-```bash
-git checkout amrin
-git pull origin main
-php artisan migrate
-```
-
-- `git pull origin main` mengambil pekerjaan anggota lain yang sudah di-merge.
-- `php artisan migrate` menjalankan migration baru kalau ada.
-
-### Setelah mengerjakan sesuatu
-
-```bash
-git add .
-git commit -m "DAHIF-3 tambah form tambah pengungsi"
-git push origin amrin
-```
-
-Selalu awali pesan commit dengan **key Jira** PBI yang dikerjakan (DAHIF-1 sampai DAHIF-18).
-
-Di GitHub Desktop: tulis Summary, klik **Commit to amrin**, lalu **Push origin**.
-
-### Setelah satu PBI selesai: gabung ke `main`
-
-1. Jalankan `git pull origin main` dan pastikan tidak ada konflik.
-2. Jalankan `php artisan serve` dan pastikan aplikasi masih berjalan.
-3. Buka repo di GitHub, klik **Compare & pull request** (atau **Pull requests → New pull request**).
-4. Pastikan **base: `main`** dan **compare: `amrin`**.
-5. Judul PR: `DAHIF-3 Kelola Data Pengungsi`. Tulis singkat apa yang dikerjakan.
-6. Klik **Create pull request**, lalu langsung klik **Merge pull request** dan **Confirm merge**.
-7. **Jangan hapus branch kamu.** Lanjutkan PBI berikutnya di branch yang sama.
-
-> **Jangan pernah membuat PR ke `production`.** Branch itu khusus untuk deploy dan hanya diisi Dhafa di akhir Sprint.
-
----
-
-## Bagian 6. Aturan penting
-
-- **Jangan push file `.env`.** File ini sudah diabaikan oleh `.gitignore`. Kalau `.env` muncul di daftar perubahan GitHub Desktop, jangan di-commit.
-- **Jangan push langsung ke `main` atau `production`.** Selalu lewat Pull Request dari branch sendiri.
-- **Jangan mengubah file migration.** Kalau butuh kolom atau tabel tambahan, minta Ibnu.
-- **Kerjakan hanya tabel milik PBI kamu.** Lihat pembagian PBI di [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
-## Masalah yang sering muncul
-
-| Pesan error | Penyebab | Solusi |
+| Sprint | Periode | PBI |
 | --- | --- | --- |
-| `composer` / `php` / `git` `is not recognized` | Terminal dibuka sebelum alat dipasang | Tutup **semua** jendela VS Code (File → Exit), lalu buka lagi. Atau jalankan perintah di bawah tabel ini. |
-| `The zip extension and unzip/7s commands are both missing` | Ekstensi zip belum aktif | Aktifkan `extension=zip` di `php.ini` (Bagian 1.2) |
-| `could not find driver` | Ekstensi pdo_mysql belum aktif | Aktifkan `extension=pdo_mysql` di `php.ini` |
-| `SQLSTATE[HY000] [2002] No connection could be made` | MySQL XAMPP belum menyala | Klik **Start** pada MySQL di XAMPP Control Panel |
-| `SQLSTATE[HY000] [1049] Unknown database 'siaga_bencana'` | Database belum dibuat | Buat database di phpMyAdmin (Bagian 3.4) |
-| `SQLSTATE[HY000] [1045] Access denied for user 'root'` | Password MySQL tidak cocok | Pastikan `DB_PASSWORD=` kosong, atau isi sesuai password MySQL kamu |
-| `Database file at path [...database.sqlite] does not exist` | `.env` masih memakai SQLite | Ubah `DB_CONNECTION=mysql` (Bagian 3.3), lalu jalankan `php artisan config:clear` |
-| `No application encryption key has been specified` | Belum generate key | Jalankan `php artisan key:generate` |
-| MySQL XAMPP tidak mau Start (port 3306 dipakai) | Ada MySQL lain yang berjalan | Matikan layanan MySQL lain di **Services** Windows, atau tanyakan di grup |
-| Konflik saat `git pull origin main` | Kamu dan anggota lain mengubah file yang sama | Buka file berkonflik di VS Code, pilih perubahan yang benar, simpan, lalu commit. Tanyakan di grup kalau ragu. |
+| Sprint 1 | 26 Oktober – 21 November 2026 | DAHIF-1 s.d. DAHIF-9 |
+| Sprint 2 | 23 November – 26 Desember 2026 | DAHIF-10 s.d. DAHIF-18 |
 
-Perintah untuk menyegarkan PATH tanpa menutup VS Code:
+## Tim Pengembang
 
-```bash
-$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
-```
+| Nama | NIM | Peran |
+| --- | --- | --- |
+| Dhafa Haditya Ramadhan | 102022400169 | Product Owner, Project Manager, Full-Stack Developer |
+| Amrin Rasyida Utami | 102022430061 | Scrum Master, Full-Stack Developer |
+| Hadyan Arkananta Ryandi | 102022400309 | Full-Stack Developer (kerangka tampilan) |
+| Ibnu Rival Jabir | 102022400012 | Full-Stack Developer (struktur basis data) |
+| Achmad Atsir Hadiid Alhariz | 102022400175 | Full-Stack Developer |
+| Muhammad Fiqih Rahman | 102022400070 | QA, Full-Stack Developer |
 
-Kalau masih bermasalah, kirim screenshot error ke grup kelompok.
+## Aturan branch
+
+- `main` (default branch): branch utama pengembangan. Semua PBI digabung ke sini lewat Pull Request. Semua anggota boleh langsung merge PR miliknya sendiri.
+- `production`: branch untuk deploy. Hanya diisi dari `main` di akhir setiap Sprint, setelah lolos pengujian. Server hosting mengambil kode dari branch ini.
+- Branch anggota: satu branch per anggota sesuai nama, dengan huruf kecil: `dhafa`, `amrin`, `arkan`, `ibnu`, `achmad`, dan `fiqih`.
+- Dilarang push langsung ke `main` dan `production`. Semua perubahan lewat Pull Request ke `main`, tanpa perlu approval.
