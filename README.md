@@ -74,8 +74,8 @@ Login/logout dan Dashboard Monitoring dikerjakan Dhafa dan tidak dihitung sebaga
 
 ## Aturan branch
 
-- `main`: versi stabil untuk demo dan Sprint Review.
-- `develop`: integrasi semua PBI selama Sprint.
-- Branch fitur: `feature/DAHIF-<nomor>-<nama-singkat>`, contoh `feature/DAHIF-3-pengungsi`.
-- Dilarang push langsung ke `main` dan `develop`. Semua perubahan lewat Pull Request ke `develop` dengan minimal 1 approval.
+- `main` (default branch): branch utama pengembangan. Semua PBI digabung ke sini lewat Pull Request. Semua anggota boleh langsung merge PR miliknya sendiri.
+- `production`: branch untuk deploy. Hanya diisi dari `main` di akhir setiap Sprint, setelah lolos pengujian. Server hosting mengambil kode dari branch ini.
+- Branch anggota: satu branch per anggota sesuai nama, yaitu `dhafa`, `amrin`, `arkan`, `ibnu`, `achmad`, dan `fiqih`.
+- Dilarang push langsung ke `main` dan `production`. Semua perubahan lewat Pull Request ke `main`, tanpa perlu approval.
 
