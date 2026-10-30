@@ -6,7 +6,7 @@ SiaGa Bencana bukan alat prediksi bencana. Fokusnya adalah pengelolaan informasi
 
 Tugas Besar mata kuliah Proyek Perangkat Lunak, Kelompok PPL-SI4807-KELA-A.
 
-> **Anggota tim:** ikuti [Panduan Anggota SiaGa Bencana](https://claude.ai/artifact/9YnawB7kUNGnYNAr6gSrA5) langkah demi langkah, mulai dari clone sampai Pull Request. Aturan branch ada di [CONTRIBUTING.md](CONTRIBUTING.md).
+> **Anggota tim:** ikuti [Panduan Anggota SiaGa Bencana](https://claude.ai/artifact/9YnawB7kUNGnYNAr6gSrA5) langkah demi langkah, mulai dari clone sampai Pull Request. Aturan branch ada di [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## Aktor
 

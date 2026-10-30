@@ -1,0 +1,203 @@
+name: Validate Pull Request and Commits
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  validate:
+    name: Validate PR title and commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check title and commits
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const base = pr.base.ref;
+            const jiraTitles = {
+              "DAHIF-1": "Kelola Data Wilayah Terdampak",
+              "DAHIF-2": "Kelola Data Posko Pengungsian",
+              "DAHIF-3": "Kelola Data Pengungsi",
+              "DAHIF-4": "Kelola Sumber Bantuan",
+              "DAHIF-5": "Kelola Stok Logistik Posko",
+              "DAHIF-6": "Kelola Data Barang Logistik",
+              "DAHIF-7": "Kelola Permintaan Kebutuhan Mendesak",
+              "DAHIF-8": "Kelola Kategori Bencana",
+              "DAHIF-9": "Kelola Laporan Kejadian Bencana",
+              "DAHIF-10": "Kelola Fasilitas Posko",
+              "DAHIF-11": "Kelola Kondisi Medis Pengungsi",
+              "DAHIF-12": "Kelola Kontak Darurat Pengungsi",
+              "DAHIF-13": "Kelola Pengumuman Darurat",
+              "DAHIF-14": "Kelola Kontak Layanan Darurat",
+              "DAHIF-15": "Kelola Penerimaan Logistik",
+              "DAHIF-16": "Kelola Distribusi Bantuan",
+              "DAHIF-17": "Kelola Tindak Lanjut Permintaan",
+              "DAHIF-18": "Kelola Verifikasi Laporan"
+            };
+            const maintenanceTitle = "CHORE: Aturan Kontribusi dan Validasi Repository";
+
+            const reject = async (reason) => {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: "PR ditutup otomatis karena tidak memenuhi aturan repository.\n\n" +
+                  reason +
+                  "\n\nPerbaiki judul atau commit, lalu buka kembali PR ini."
+              });
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                state: "closed"
+              });
+              core.setFailed(reason);
+            };
+
+            let requiredPrefix = null;
+            if (base === "main") {
+              const expected = Object.entries(jiraTitles)
+                .map(([key, value]) => key + " " + value);
+              if (pr.title === maintenanceTitle) {
+                requiredPrefix = maintenanceTitle;
+              } else if (!expected.includes(pr.title)) {
+                await reject("Judul PR harus sama persis dengan judul Jira, contoh: DAHIF-3 Kelola Data Pengungsi.");
+                return;
+              } else {
+                requiredPrefix = pr.title;
+              }
+            } else if (base === "production") {
+              if (!/^Release Sprint \d+$/.test(pr.title)) {
+                await reject("Judul PR ke production harus menggunakan format: Release Sprint <nomor>.");
+                return;
+              }
+              return;
+            } else {
+              await reject("PR hanya boleh ditujukan ke main atau production.");
+              return;
+            }
+
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100
+            });
+            const invalid = commits.filter((commit) => {
+              const firstLine = (commit.commit.message || "").split("\n")[0];
+              return firstLine !== requiredPrefix &&
+                !firstLine.startsWith(requiredPrefix + ": ");
+            });
+
+            if (invalid.length > 0) {
+              const list = invalid
+                .map((commit) => "- " + commit.sha.slice(0, 7) + ": " +
+                  commit.commit.message.split("\n")[0])
+                .join("\n");
+              await reject(
+                "Pesan commit harus diawali dengan:\n" +
+                requiredPrefix + ": <ringkasan perubahan>\n\n" +
+                "Commit yang bermasalah:\n" + list
+              );
+              return;
+            }
+
+            if (requiredPrefix === maintenanceTitle) {
+              if (pr.head.ref !== "dhafa") {
+                await reject("PR administrasi repository hanya boleh dibuat dari branch dhafa.");
+                return;
+              }
+            }
+
+            const pbiMatch = requiredPrefix.match(/^(DAHIF-\d+)/);
+            if (!pbiMatch) {
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                per_page: 100
+              });
+              const invalidFiles = files
+                .map((file) => file.filename)
+                .filter((file) => !file.startsWith(".github/") && !file.startsWith("docs/") && file !== "README.md");
+
+              if (invalidFiles.length > 0) {
+                await reject("PR administrasi repository hanya boleh mengubah dokumentasi dan konfigurasi GitHub. File di luar scope:\n- " + invalidFiles.join("\n- "));
+              }
+              return;
+            }
+
+            const pbi = pbiMatch[1];
+            const ownerByPbi = {
+              "DAHIF-1": "dhafa",
+              "DAHIF-2": "dhafa",
+              "DAHIF-3": "amrin",
+              "DAHIF-4": "arkan",
+              "DAHIF-5": "ibnu",
+              "DAHIF-6": "achmad",
+              "DAHIF-7": "achmad",
+              "DAHIF-8": "fiqih",
+              "DAHIF-9": "fiqih",
+              "DAHIF-10": "dhafa",
+              "DAHIF-11": "amrin",
+              "DAHIF-12": "amrin",
+              "DAHIF-13": "arkan",
+              "DAHIF-14": "arkan",
+              "DAHIF-15": "ibnu",
+              "DAHIF-16": "ibnu",
+              "DAHIF-17": "achmad",
+              "DAHIF-18": "fiqih"
+            };
+
+            const expectedBranch = ownerByPbi[pbi];
+            if (pr.head.ref !== expectedBranch) {
+              await reject(
+                "PBI ini milik branch " + expectedBranch +
+                ", tetapi PR dibuat dari branch " + pr.head.ref + "."
+              );
+              return;
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100
+            });
+            const changedFiles = files.map((file) => file.filename);
+            const restrictedFiles = [];
+
+            for (const file of changedFiles) {
+              if (file.startsWith("database/migrations/") && pr.head.ref !== "ibnu") {
+                restrictedFiles.push(file + " (migration hanya boleh diubah branch ibnu)");
+              }
+              if (
+                (file === ".env" || file.startsWith(".env.")) &&
+                file !== ".env.example"
+              ) {
+                restrictedFiles.push(file + " (file environment tidak boleh diubah)");
+              }
+              if (file.startsWith(".github/workflows/") && pr.head.ref !== "dhafa") {
+                restrictedFiles.push(file + " (workflow hanya boleh diubah branch dhafa)");
+              }
+              if (
+                (file === "app/Services/StokService.php" ||
+                  file.startsWith("app/Services/StokService/")) &&
+                pr.head.ref !== "ibnu"
+              ) {
+                restrictedFiles.push(file + " (StokService hanya boleh diubah branch ibnu)");
+              }
+            }
+
+            if (restrictedFiles.length > 0) {
+              await reject(
+                "PR menyentuh file di luar kewenangan branch:\n- " +
+                restrictedFiles.join("\n- ")
+              );
+            }
