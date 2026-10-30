@@ -32,9 +32,9 @@ Ganti `amrin` dengan nama masing-masing.
 ## Urutan awal Sprint 1
 
 1. Dhafa: setup Laravel di `main`, lalu buat `production` dari `main`.
-2. Ibnu: migration 19 tabel dan seeder di branch `ibnu`, di-merge ke `main` di hari pertama.
+2. Ibnu: migration 19 tabel di branch `ibnu`, di-merge ke `main` di hari pertama.
 3. Arkan: layout Blade dan Bootstrap bersama di branch `arkan`.
-4. Anggota lain menarik `main` ke branchnya setelah poin 2 dan 3 masuk, lalu mulai mengerjakan PBI.
+4. Anggota lain menarik `main` ke branchnya setelah poin 2 masuk, lalu langsung mengerjakan PBI dengan data dummy sendiri. Tidak perlu menunggu layout Arkan.
 
 ## Alur kerja harian
 
@@ -87,6 +87,7 @@ Jangan mengembangkan fitur langsung di `production`. Kalau ada bug di produksi, 
 ## Aturan khusus
 
 - **Migration hanya lewat Ibnu.** Butuh kolom atau tabel tambahan? Minta Ibnu membuat migration baru. Jangan mengubah file migration yang sudah di-merge.
+- **Data dummy dibuat sendiri.** Setiap anggota membuat seeder untuk tabel PBI-nya (`php artisan make:seeder PengungsiSeeder`), lalu menambah satu baris `$this->call(...)` di `DatabaseSeeder.php`. Kalau butuh data dari tabel anggota lain yang belum ada, buat baris minimal dengan `updateOrInsert` agar tidak dobel.
 - **Jangan push file `.env`.** Bagikan konfigurasi lewat `.env.example`.
 - **Satu PBI hanya menyentuh tabel miliknya sendiri**, sesuai pembagian 18 PBI.
 - **StokService** (PBI-05, 15, 16) hanya diubah oleh Ibnu.
