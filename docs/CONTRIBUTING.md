@@ -45,9 +45,9 @@ git checkout amrin
 # 2. Ambil perubahan terbaru dari main
 git pull origin main
 
-# 3. Kerjakan PBI, lalu commit dengan key Jira di awal pesan
+# 3. Kerjakan PBI, lalu commit dengan kode dan nama Jira di awal pesan
 git add .
-git commit -m "DAHIF-3 tambah form tambah pengungsi"
+git commit -m "DAHIF-3 Kelola Data Pengungsi: tambah form pengungsi"
 
 # 4. Push ke branch sendiri
 git push origin amrin
@@ -59,8 +59,14 @@ Karena branch anggota dipakai lama, **wajib menjalankan `git pull origin main` s
 
 - Buat PR dari branch sendiri ke `main` setiap satu PBI (atau satu bagian CRUD) selesai. Jangan menunggu semua PBI selesai baru membuat PR.
 - Target PR selalu `main`. **Jangan pernah membuat PR ke `production`.**
-- Judul PR: `DAHIF-<nomor> <Nama PBI>`, contoh `DAHIF-3 Kelola Data Pengungsi`.
+- Judul PR wajib sama persis dengan judul pekerjaan di Jira: `DAHIF-<nomor> <Nama PBI>`, contoh `DAHIF-3 Kelola Data Pengungsi`. Jangan menambahkan `[WIP]`, emoji, tanda baca, atau keterangan lain.
+- Untuk perubahan administrasi repository yang bukan PBI fitur, gunakan judul khusus `CHORE: Aturan Kontribusi dan Validasi Repository`. PR jenis ini hanya boleh dibuat dari branch `dhafa` dan hanya boleh mengubah dokumentasi, README, atau konfigurasi GitHub.
+- Daftar judul Jira yang valid mengikuti daftar PBI di [README.md](../README.md). GitHub Actions akan menolak check jika judul tidak cocok.
+- Pesan commit wajib diawali kode dan nama PBI Jira yang sama persis dengan judul PR, lalu boleh ditambahkan ringkasan teknis setelah tanda titik dua. Contoh: `DAHIF-3 Kelola Data Pengungsi: tambah validasi form`.
+- Untuk PR administrasi repository, pesan commit wajib diawali `CHORE: Aturan Kontribusi dan Validasi Repository`, lalu boleh ditambahkan ringkasan perubahan.
+- Jangan menggunakan pesan commit umum seperti `Update`, `Fix`, atau `Perubahan` tanpa kode dan nama PBI.
 - Deskripsi PR mencantumkan apa yang dikerjakan dan cara mengujinya.
+- PR wajib lolos GitHub Action `Laravel tests`. Jika test gagal, perbaiki terlebih dahulu sebelum meminta merge.
 - **Tidak perlu approval.** Setiap anggota langsung merge PR miliknya sendiri.
 - Sebelum merge, pastikan branch sudah memuat `main` terbaru, tidak ada konflik, dan aplikasi masih bisa dijalankan (`php artisan serve`).
 - Setelah merge, **jangan hapus branch**. Lanjutkan PBI berikutnya di branch yang sama.
@@ -68,6 +74,8 @@ Karena branch anggota dipakai lama, **wajib menjalankan `git pull origin main` s
 ## Rilis ke production
 
 Di akhir setiap Sprint (setelah pekan pengujian dan integrasi), Dhafa membuat PR dari `main` ke `production`, lalu merge:
+
+- Judul PR rilis wajib menggunakan format `Release Sprint <nomor>`, misalnya `Release Sprint 1`.
 
 - Sprint 1: 21 November 2026
 - Sprint 2: 26 Desember 2026
@@ -91,6 +99,12 @@ Jangan mengembangkan fitur langsung di `production`. Kalau ada bug di produksi, 
 - **Jangan push file `.env`.** Bagikan konfigurasi lewat `.env.example`.
 - **Satu PBI hanya menyentuh tabel miliknya sendiri**, sesuai pembagian 18 PBI.
 - **StokService** (PBI-05, 15, 16) hanya diubah oleh Ibnu.
+- PR wajib dibuat dari branch PIC sesuai pembagian PBI. GitHub Actions akan menutup PR jika branch tidak sesuai dengan PBI.
+- `database/migrations/` hanya boleh diubah dari branch `ibnu`.
+- `app/Services/StokService.php` hanya boleh diubah dari branch `ibnu`.
+- File `.env` dan file environment lain yang berisi konfigurasi lokal tidak boleh diubah atau di-commit. `.env.example` boleh diperbarui jika diperlukan.
+- File `.github/workflows/` hanya boleh diubah dari branch `dhafa` agar aturan Action tidak berubah sembarangan.
+- **Penggunaan AI wajib mengikuti [Aturan Penggunaan AI](ATURAN_PENGGUNAAN_AI.md).** Sebelum mengirim prompt pekerjaan, anggota wajib memberikan `CONTRIBUTING.md` dan `ATURAN_PENGGUNAAN_AI.md` kepada AI, lalu meminta AI mengonfirmasi bahwa kedua dokumen sudah dibaca dan dipahami.
 
 ## Pembagian PBI
 

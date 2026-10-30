@@ -1,0 +1,43 @@
+name: Close PR When Tests Fail
+
+on:
+  workflow_run:
+    workflows: [Run Laravel Tests]
+    types: [completed]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  close-failed-pr:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Close pull requests with failed tests
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pullRequests = context.payload.workflow_run.pull_requests || [];
+            const runUrl = context.payload.workflow_run.html_url;
+
+            for (const pullRequest of pullRequests) {
+              const reason =
+                "GitHub Action Laravel tests gagal. Perbaiki error test sebelum membuka kembali PR ini.\n\n" +
+                "Detail workflow: " + runUrl;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pullRequest.number,
+                body: "PR ditutup otomatis.\n\n" + reason
+              });
+
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullRequest.number,
+                state: "closed"
+              });
+            }
