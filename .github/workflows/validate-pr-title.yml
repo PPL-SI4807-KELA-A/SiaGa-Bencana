@@ -20,6 +20,7 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const base = pr.base.ref;
+            const headBranch = pr.head.ref.toLowerCase();
             const jiraTitles = {
               "DAHIF-1": "Kelola Data Wilayah Terdampak",
               "DAHIF-2": "Kelola Data Posko Pengungsian",
@@ -109,7 +110,7 @@ jobs:
             }
 
             if (requiredPrefix === maintenanceTitle) {
-              if (pr.head.ref !== "dhafa") {
+              if (headBranch !== "dhafa") {
                 await reject("PR administrasi repository hanya boleh dibuat dari branch dhafa.");
                 return;
               }
@@ -156,7 +157,7 @@ jobs:
             };
 
             const expectedBranch = ownerByPbi[pbi];
-            if (pr.head.ref !== expectedBranch) {
+            if (headBranch !== expectedBranch) {
               await reject(
                 "PBI ini milik branch " + expectedBranch +
                 ", tetapi PR dibuat dari branch " + pr.head.ref + "."
@@ -174,7 +175,7 @@ jobs:
             const restrictedFiles = [];
 
             for (const file of changedFiles) {
-              if (file.startsWith("database/migrations/") && pr.head.ref !== "ibnu") {
+              if (file.startsWith("database/migrations/") && headBranch !== "ibnu") {
                 restrictedFiles.push(file + " (migration hanya boleh diubah branch ibnu)");
               }
               if (
@@ -183,13 +184,13 @@ jobs:
               ) {
                 restrictedFiles.push(file + " (file environment tidak boleh diubah)");
               }
-              if (file.startsWith(".github/workflows/") && pr.head.ref !== "dhafa") {
+              if (file.startsWith(".github/workflows/") && headBranch !== "dhafa") {
                 restrictedFiles.push(file + " (workflow hanya boleh diubah branch dhafa)");
               }
               if (
                 (file === "app/Services/StokService.php" ||
                   file.startsWith("app/Services/StokService/")) &&
-                pr.head.ref !== "ibnu"
+                headBranch !== "ibnu"
               ) {
                 restrictedFiles.push(file + " (StokService hanya boleh diubah branch ibnu)");
               }
