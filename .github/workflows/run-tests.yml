@@ -31,5 +31,10 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Prepare test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
       - name: Run Laravel tests
         run: php artisan test
