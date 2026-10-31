@@ -175,9 +175,6 @@ jobs:
             const restrictedFiles = [];
 
             for (const file of changedFiles) {
-              if (file.startsWith("database/migrations/") && headBranch !== "ibnu") {
-                restrictedFiles.push(file + " (migration hanya boleh diubah branch ibnu)");
-              }
               if (
                 (file === ".env" || file.startsWith(".env.")) &&
                 file !== ".env.example"

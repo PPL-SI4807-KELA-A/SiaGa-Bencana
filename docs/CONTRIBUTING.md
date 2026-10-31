@@ -32,9 +32,9 @@ Ganti `amrin` dengan nama masing-masing.
 ## Urutan awal Sprint 1
 
 1. Dhafa: setup Laravel di `main`, lalu buat `production` dari `main`.
-2. Ibnu: migration 19 tabel di branch `ibnu`, di-merge ke `main` di hari pertama.
+2. Ibnu membantu menyiapkan dasar skema awal. Setiap PIC tetap dapat langsung mengerjakan PBI dan migration untuk tabel milik PBI-nya sendiri; tidak ada PBI yang harus menunggu migration atau data PBI lain.
 3. Arkan: layout Blade dan Bootstrap bersama di branch `arkan`.
-4. Anggota lain menarik `main` ke branchnya setelah poin 2 masuk, lalu langsung mengerjakan PBI dengan data dummy sendiri. Tidak perlu menunggu layout Arkan.
+4. Setiap anggota menarik `main` terbaru ke branch masing-masing, lalu mengerjakan PBI dengan data dummy sendiri. Tidak perlu menunggu layout Arkan atau implementasi PBI lain.
 
 ## Alur kerja harian
 
@@ -94,15 +94,15 @@ Jangan mengembangkan fitur langsung di `production`. Kalau ada bug di produksi, 
 
 ## Aturan khusus
 
-- **Migration hanya lewat Ibnu.** Butuh kolom atau tabel tambahan? Minta Ibnu membuat migration baru. Jangan mengubah file migration yang sudah di-merge.
 - **Setiap PBI harus dapat dikembangkan dan diuji secara mandiri.** Jangan menunggu PBI anggota lain selesai untuk mulai coding atau menguji fitur sendiri.
-- **Data dummy dibuat dan dikelola sendiri oleh PIC PBI.** Siapkan data untuk tabel PBI sendiri serta data pendukung minimal yang dibutuhkan agar alur PBI dapat diuji tanpa menunggu data dari fitur anggota lain. Data pendukung harus mengikuti skema database yang disepakati; jangan membuat tabel atau kolom duplikat sebagai pengganti skema bersama.
+- **Data dummy dibuat dan dikelola sendiri oleh PIC PBI.** Setiap PBI harus dapat dimigrasikan, dijalankan, dan diuji tanpa migration, tabel, atau data dari PBI lain. Jangan membuat relasi database wajib yang membuat satu PBI tidak bisa berjalan tanpa PBI lain.
+- **PIC PBI membuat migration baru di branch miliknya untuk tabel dalam scope PBI tersebut.** Migration hanya mengelola tabel PBI sendiri dan harus dapat dijalankan tanpa migration PBI lain. Jangan mengubah migration yang sudah di-merge atau tabel milik PBI lain. Ibnu dapat membantu menjaga konsistensi rancangan skema, tetapi bukan prasyarat atau antrean persetujuan untuk mulai mengerjakan PBI.
 - **Seeder dibuat dalam file terpisah untuk setiap PBI**, misalnya `PengungsiSeeder`. Hindari mengedit `DatabaseSeeder.php` secara bersamaan. Pendaftaran seeder ke `DatabaseSeeder.php` dikoordinasikan dengan tim agar tidak terjadi konflik; untuk kebutuhan lokal, jalankan seeder PBI secara langsung.
 - **Jangan push file `.env`.** Bagikan konfigurasi lewat `.env.example`.
-- **Satu PBI hanya mengubah tabel yang menjadi tanggung jawabnya**, sesuai pembagian PBI. Jangan mengubah tabel atau migration milik PBI lain. Jika PBI membutuhkan perubahan skema lintas fitur, koordinasikan dengan Ibnu sebelum mengubahnya.
+- **Satu PBI hanya mengubah tabel yang menjadi tanggung jawabnya**, sesuai pembagian PBI. Jangan mengubah tabel atau migration milik PBI lain. Jangan membuat foreign key atau ketergantungan skema wajib antar-PBI; siapkan data dummy lokal agar PBI tetap dapat diuji sendiri.
 - **StokService** (PBI-05, 15, 16) hanya diubah oleh Ibnu.
 - PR wajib dibuat dari branch PIC sesuai pembagian PBI. GitHub Actions akan menutup PR jika branch tidak sesuai dengan PBI.
-- `database/migrations/` hanya boleh diubah dari branch `ibnu`.
+- Migration baru untuk tabel PBI boleh ditambahkan dari branch PIC PBI terkait. GitHub Actions memeriksa bahwa PR berasal dari branch PIC yang sesuai dengan kode PBI pada judulnya.
 - `app/Services/StokService.php` hanya boleh diubah dari branch `ibnu`.
 - File `.env` dan file environment lain yang berisi konfigurasi lokal tidak boleh diubah atau di-commit. `.env.example` boleh diperbarui jika diperlukan.
 - File `.github/workflows/` hanya boleh diubah dari branch `dhafa` agar aturan Action tidak berubah sembarangan.
