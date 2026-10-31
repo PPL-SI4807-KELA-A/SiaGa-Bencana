@@ -95,9 +95,11 @@ Jangan mengembangkan fitur langsung di `production`. Kalau ada bug di produksi, 
 ## Aturan khusus
 
 - **Migration hanya lewat Ibnu.** Butuh kolom atau tabel tambahan? Minta Ibnu membuat migration baru. Jangan mengubah file migration yang sudah di-merge.
-- **Data dummy dibuat sendiri.** Setiap anggota membuat seeder untuk tabel PBI-nya (`php artisan make:seeder PengungsiSeeder`), lalu menambah satu baris `$this->call(...)` di `DatabaseSeeder.php`. Kalau butuh data dari tabel anggota lain yang belum ada, buat baris minimal dengan `updateOrInsert` agar tidak dobel.
+- **Setiap PBI harus dapat dikembangkan dan diuji secara mandiri.** Jangan menunggu PBI anggota lain selesai untuk mulai coding atau menguji fitur sendiri.
+- **Data dummy dibuat dan dikelola sendiri oleh PIC PBI.** Siapkan data untuk tabel PBI sendiri serta data pendukung minimal yang dibutuhkan agar alur PBI dapat diuji tanpa menunggu data dari fitur anggota lain. Data pendukung harus mengikuti skema database yang disepakati; jangan membuat tabel atau kolom duplikat sebagai pengganti skema bersama.
+- **Seeder dibuat dalam file terpisah untuk setiap PBI**, misalnya `PengungsiSeeder`. Hindari mengedit `DatabaseSeeder.php` secara bersamaan. Pendaftaran seeder ke `DatabaseSeeder.php` dikoordinasikan dengan tim agar tidak terjadi konflik; untuk kebutuhan lokal, jalankan seeder PBI secara langsung.
 - **Jangan push file `.env`.** Bagikan konfigurasi lewat `.env.example`.
-- **Satu PBI hanya menyentuh tabel miliknya sendiri**, sesuai pembagian 18 PBI.
+- **Satu PBI hanya mengubah tabel yang menjadi tanggung jawabnya**, sesuai pembagian PBI. Jangan mengubah tabel atau migration milik PBI lain. Jika PBI membutuhkan perubahan skema lintas fitur, koordinasikan dengan Ibnu sebelum mengubahnya.
 - **StokService** (PBI-05, 15, 16) hanya diubah oleh Ibnu.
 - PR wajib dibuat dari branch PIC sesuai pembagian PBI. GitHub Actions akan menutup PR jika branch tidak sesuai dengan PBI.
 - `database/migrations/` hanya boleh diubah dari branch `ibnu`.
