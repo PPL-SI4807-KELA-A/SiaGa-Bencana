@@ -58,7 +58,7 @@ AI dan anggota wajib mengikuti ketentuan berikut:
 - Jangan mengganti Laravel, PHP, Bootstrap, Vite, atau dependency utama tanpa persetujuan.
 - Jangan menambahkan package Composer atau npm jika tidak diperlukan oleh PBI.
 - Jangan mengubah struktur database, migration, atau relasi tabel di luar scope PBI.
-- Migration baru hanya dibuat melalui branch `ibnu` sesuai aturan kontribusi.
+- PIC boleh membuat migration baru di branch miliknya untuk tabel dalam scope PBI sendiri. Setiap PBI harus dapat dimigrasikan dan diuji tanpa migration, tabel, atau data dari PBI lain; jangan membuat foreign key atau ketergantungan skema wajib antar-PBI. Jangan mengubah migration atau tabel milik PBI lain; ikuti aturan kontribusi.
 - Jangan mengubah file `.env` atau membagikan isinya. Gunakan `.env.example` untuk dokumentasi konfigurasi.
 - Jalankan perintah sesuai tools proyek, misalnya `composer install`, `npm install`, `npm run build`, `php artisan migrate`, dan `php artisan test` jika relevan.
 - Jangan mengarang konfigurasi XAMPP, MySQL, Composer, npm, atau Vite yang tidak sesuai dengan repository.
