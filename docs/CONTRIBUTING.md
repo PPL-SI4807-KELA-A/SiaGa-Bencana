@@ -33,7 +33,7 @@ Ganti `amrin` dengan nama masing-masing.
 
 1. Dhafa: setup Laravel di `main`, lalu buat `production` dari `main`.
 2. Ibnu membantu menyiapkan dasar skema awal. Setiap PIC tetap dapat langsung mengerjakan PBI dan migration untuk tabel milik PBI-nya sendiri; tidak ada PBI yang harus menunggu migration atau data PBI lain.
-3. Arkan: layout Blade dan Bootstrap bersama di branch `arkan`.
+3. Arkan: layout Blade dan Bootstrap bersama di branch `arkan`, dikirim lewat PR berjudul `CHORE: Layout Bersama`.
 4. Setiap anggota menarik `main` terbaru ke branch masing-masing, lalu mengerjakan PBI dengan data dummy sendiri. Tidak perlu menunggu layout Arkan atau implementasi PBI lain.
 
 ## Alur kerja harian
@@ -60,14 +60,24 @@ Karena branch anggota dipakai lama, **wajib menjalankan `git pull origin main` s
 - Buat PR dari branch sendiri ke `main` setiap satu PBI (atau satu bagian CRUD) selesai. Jangan menunggu semua PBI selesai baru membuat PR.
 - Target PR selalu `main`. **Jangan pernah membuat PR ke `production`.**
 - Judul PR wajib sama persis dengan judul pekerjaan di Jira: `DAHIF-<nomor> <Nama PBI>`, contoh `DAHIF-3 Kelola Data Pengungsi`. Jangan menambahkan `[WIP]`, emoji, tanda baca, atau keterangan lain.
-- Untuk perubahan administrasi repository yang bukan PBI fitur, gunakan judul khusus `CHORE: Aturan Kontribusi dan Validasi Repository`. PR jenis ini hanya boleh dibuat dari branch `dhafa` dan hanya boleh mengubah dokumentasi, README, atau konfigurasi GitHub.
+- Pekerjaan yang bukan PBI memakai judul CHORE khusus berikut. Judul lain di luar daftar ini akan ditolak.
+
+  | Judul PR | Branch | Boleh mengubah |
+  | --- | --- | --- |
+  | `CHORE: Aturan Kontribusi dan Validasi Repository` | `dhafa` | Hanya `docs/`, `.github/`, dan `README.md` |
+  | `CHORE: Login dan Dashboard Monitoring` | `dhafa` | File aplikasi untuk login/logout dan Dashboard Monitoring |
+  | `CHORE: Layout Bersama` | `arkan` | File aplikasi untuk layout Blade dan Bootstrap bersama |
+
+  Aturan file terbatas (`.env`, workflow, dan `StokService`) tetap berlaku untuk PR CHORE.
 - Daftar judul Jira yang valid mengikuti daftar PBI di [README.md](../README.md). GitHub Actions akan menolak check jika judul tidak cocok.
 - Pesan commit wajib diawali kode dan nama PBI Jira yang sama persis dengan judul PR, lalu boleh ditambahkan ringkasan teknis setelah tanda titik dua. Contoh: `DAHIF-3 Kelola Data Pengungsi: tambah validasi form`.
-- Untuk PR administrasi repository, pesan commit wajib diawali `CHORE: Aturan Kontribusi dan Validasi Repository`, lalu boleh ditambahkan ringkasan perubahan.
+- Untuk PR CHORE, pesan commit wajib diawali judul CHORE yang sama persis dengan judul PR, lalu boleh ditambahkan ringkasan perubahan. Contoh: `CHORE: Layout Bersama: tambah navbar per peran`.
+- Merge commit hasil `git pull origin main` (misalnya `Merge branch 'main' of ...`) tidak diperiksa, jadi tidak perlu diubah.
 - Jangan menggunakan pesan commit umum seperti `Update`, `Fix`, atau `Perubahan` tanpa kode dan nama PBI.
 - Deskripsi PR mencantumkan apa yang dikerjakan dan cara mengujinya.
 - PR wajib lolos GitHub Action `Laravel tests`. Jika test gagal, perbaiki terlebih dahulu sebelum meminta merge.
 - **Tidak perlu approval.** Setiap anggota langsung merge PR miliknya sendiri.
+- Merge PR **hanya dengan tombol "Create a merge commit"**. Jangan memakai "Squash and merge" atau "Rebase and merge", karena branch anggota dipakai terus dan commit lama akan muncul lagi di PR berikutnya sehingga PR ditolak.
 - Sebelum merge, pastikan branch sudah memuat `main` terbaru, tidak ada konflik, dan aplikasi masih bisa dijalankan (`php artisan serve`).
 - Setelah merge, **jangan hapus branch**. Lanjutkan PBI berikutnya di branch yang sama.
 

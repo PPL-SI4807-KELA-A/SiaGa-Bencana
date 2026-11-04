@@ -41,7 +41,12 @@ jobs:
               "DAHIF-17": "Kelola Tindak Lanjut Permintaan",
               "DAHIF-18": "Kelola Verifikasi Laporan"
             };
-            const maintenanceTitle = "CHORE: Aturan Kontribusi dan Validasi Repository";
+            // Pekerjaan non-PBI. docsOnly = hanya boleh mengubah docs/, .github/, dan README.md.
+            const choreTitles = {
+              "CHORE: Aturan Kontribusi dan Validasi Repository": { branch: "dhafa", docsOnly: true },
+              "CHORE: Login dan Dashboard Monitoring": { branch: "dhafa", docsOnly: false },
+              "CHORE: Layout Bersama": { branch: "arkan", docsOnly: false }
+            };
 
             const reject = async (reason) => {
               await github.rest.issues.createComment({
@@ -65,8 +70,8 @@ jobs:
             if (base === "main") {
               const expected = Object.entries(jiraTitles)
                 .map(([key, value]) => key + " " + value);
-              if (pr.title === maintenanceTitle) {
-                requiredPrefix = maintenanceTitle;
+              if (Object.prototype.hasOwnProperty.call(choreTitles, pr.title)) {
+                requiredPrefix = pr.title;
               } else if (!expected.includes(pr.title)) {
                 await reject("Judul PR harus sama persis dengan judul Jira, contoh: DAHIF-3 Kelola Data Pengungsi.");
                 return;
@@ -90,7 +95,11 @@ jobs:
               pull_number: pr.number,
               per_page: 100
             });
+            // Merge commit (misalnya hasil git pull origin main) tidak ikut diperiksa.
             const invalid = commits.filter((commit) => {
+              if ((commit.parents || []).length > 1) {
+                return false;
+              }
               const firstLine = (commit.commit.message || "").split("\n")[0];
               return firstLine !== requiredPrefix &&
                 !firstLine.startsWith(requiredPrefix + ": ");
@@ -109,15 +118,14 @@ jobs:
               return;
             }
 
-            if (requiredPrefix === maintenanceTitle) {
-              if (headBranch !== "dhafa") {
-                await reject("PR administrasi repository hanya boleh dibuat dari branch dhafa.");
-                return;
-              }
+            const chore = choreTitles[requiredPrefix];
+            if (chore && headBranch !== chore.branch) {
+              await reject("PR \"" + requiredPrefix + "\" hanya boleh dibuat dari branch " + chore.branch + ".");
+              return;
             }
 
             const pbiMatch = requiredPrefix.match(/^(DAHIF-\d+)/);
-            if (!pbiMatch) {
+            if (chore && chore.docsOnly) {
               const files = await github.paginate(github.rest.pulls.listFiles, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -134,7 +142,7 @@ jobs:
               return;
             }
 
-            const pbi = pbiMatch[1];
+            const pbi = pbiMatch ? pbiMatch[1] : null;
             const ownerByPbi = {
               "DAHIF-1": "dhafa",
               "DAHIF-2": "dhafa",
@@ -156,7 +164,7 @@ jobs:
               "DAHIF-18": "fiqih"
             };
 
-            const expectedBranch = ownerByPbi[pbi];
+            const expectedBranch = pbi ? ownerByPbi[pbi] : chore.branch;
             if (headBranch !== expectedBranch) {
               await reject(
                 "PBI ini milik branch " + expectedBranch +
