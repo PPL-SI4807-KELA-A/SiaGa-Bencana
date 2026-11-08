@@ -69,6 +69,122 @@ class WilayahTerdampakTest extends TestCase
             ->assertSessionHasErrors(['status_penanganan', 'jumlah_kk_terdampak']);
     }
 
+    public function test_detail_page_shows_existing_record_and_missing_record_returns_404(): void
+    {
+        $wilayah = WilayahTerdampak::create($this->validData());
+
+        $this->get(route('wilayah-terdampak.show', $wilayah))
+            ->assertOk()
+            ->assertSee('Bojongsoang');
+
+        $this->get(route('wilayah-terdampak.show', 999999))->assertNotFound();
+    }
+
+    public function test_edit_page_shows_existing_values(): void
+    {
+        $wilayah = WilayahTerdampak::create($this->validData());
+
+        $this->get(route('wilayah-terdampak.edit', $wilayah))
+            ->assertOk()
+            ->assertSee('value="484"', false)
+            ->assertSee('value="Tanggap Darurat"', false);
+    }
+
+    public function test_valid_update_saves_changes_and_redirects_to_index(): void
+    {
+        $wilayah = WilayahTerdampak::create($this->validData());
+        $updated = $this->validData();
+        $updated['jumlah_kk_terdampak'] = 600;
+
+        $this->put(route('wilayah-terdampak.update', $wilayah), $updated)
+            ->assertRedirect(route('wilayah-terdampak.index'))
+            ->assertSessionHas('success', 'Data wilayah terdampak berhasil diperbarui.');
+
+        $this->assertDatabaseHas('wilayah_terdampak', ['id' => $wilayah->id, 'jumlah_kk_terdampak' => 600]);
+    }
+
+    public function test_update_without_changing_village_and_date_is_allowed(): void
+    {
+        $wilayah = WilayahTerdampak::create($this->validData());
+        $updated = $this->validData();
+        $updated['keterangan'] = 'Keterangan diperbarui.';
+
+        $this->put(route('wilayah-terdampak.update', $wilayah), $updated)
+            ->assertRedirect(route('wilayah-terdampak.index'))
+            ->assertSessionHasNoErrors();
+    }
+
+    public function test_update_rejects_village_and_date_combination_used_by_another_record(): void
+    {
+        $first = WilayahTerdampak::create($this->validData());
+        $secondData = $this->validData();
+        $secondData['desa_kelurahan'] = 'Tegalluar';
+        $second = WilayahTerdampak::create($secondData);
+
+        $this->from(route('wilayah-terdampak.edit', $second))
+            ->put(route('wilayah-terdampak.update', $second), [
+                ...$this->validData(),
+                'keterangan' => 'Perubahan duplikat.',
+            ])
+            ->assertRedirect(route('wilayah-terdampak.edit', $second))
+            ->assertSessionHasErrors('desa_kelurahan');
+
+        $this->assertDatabaseHas('wilayah_terdampak', ['id' => $first->id, 'desa_kelurahan' => 'Bojongsoang']);
+    }
+
+    public function test_destroy_deletes_record_and_redirects_to_index(): void
+    {
+        $wilayah = WilayahTerdampak::create($this->validData());
+
+        $this->delete(route('wilayah-terdampak.destroy', $wilayah))
+            ->assertRedirect(route('wilayah-terdampak.index'))
+            ->assertSessionHas('success', 'Data wilayah terdampak berhasil dihapus.');
+
+        $this->assertDatabaseMissing('wilayah_terdampak', ['id' => $wilayah->id]);
+    }
+
+    public function test_index_filters_by_kecamatan_status_and_both_together(): void
+    {
+        WilayahTerdampak::create($this->validData());
+        $dayeuhkolot = $this->validData();
+        $dayeuhkolot['desa_kelurahan'] = 'Dayeuhkolot';
+        $dayeuhkolot['kecamatan'] = 'Dayeuhkolot';
+        $dayeuhkolot['status_penanganan'] = 'Siaga';
+        WilayahTerdampak::create($dayeuhkolot);
+        $dayeuhkolotTanggap = $dayeuhkolot;
+        $dayeuhkolotTanggap['desa_kelurahan'] = 'Citeureup';
+        $dayeuhkolotTanggap['status_penanganan'] = 'Tanggap Darurat';
+        WilayahTerdampak::create($dayeuhkolotTanggap);
+
+        $this->get(route('wilayah-terdampak.index', ['kecamatan' => 'Dayeuhkolot']))
+            ->assertOk()
+            ->assertViewHas('wilayahTerdampak', fn ($daftar) => $daftar->total() === 2 && $daftar->every(fn ($item) => $item->kecamatan === 'Dayeuhkolot'));
+
+        $this->get(route('wilayah-terdampak.index', ['status_penanganan' => 'Siaga']))
+            ->assertOk()
+            ->assertViewHas('wilayahTerdampak', fn ($daftar) => $daftar->total() === 1 && $daftar->first()->status_penanganan === 'Siaga');
+
+        $this->get(route('wilayah-terdampak.index', ['kecamatan' => 'Dayeuhkolot', 'status_penanganan' => 'Siaga']))
+            ->assertOk()
+            ->assertViewHas('wilayahTerdampak', fn ($daftar) => $daftar->total() === 1 && $daftar->first()->desa_kelurahan === 'Dayeuhkolot');
+    }
+
+    public function test_invalid_filter_values_are_ignored(): void
+    {
+        WilayahTerdampak::create($this->validData());
+        $dayeuhkolot = $this->validData();
+        $dayeuhkolot['desa_kelurahan'] = 'Dayeuhkolot';
+        $dayeuhkolot['kecamatan'] = 'Dayeuhkolot';
+        WilayahTerdampak::create($dayeuhkolot);
+
+        $this->get(route('wilayah-terdampak.index', [
+            'kecamatan' => 'Kecamatan Tidak Valid',
+            'status_penanganan' => 'Status Tidak Valid',
+        ]))
+            ->assertOk()
+            ->assertViewHas('wilayahTerdampak', fn ($daftar) => $daftar->total() === 2);
+    }
+
     private function validData(): array
     {
         return [
