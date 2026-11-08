@@ -9,5 +9,5 @@ Route::get('/', function () {
 
 // DAHIF-1
 Route::resource('admin/wilayah-terdampak', WilayahTerdampakController::class)
-    ->only(['index', 'create', 'store'])
+    ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
     ->names('wilayah-terdampak');

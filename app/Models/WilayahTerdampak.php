@@ -12,6 +12,12 @@ class WilayahTerdampak extends Model
 
     public const STATUS_PENANGANAN = ['Siaga', 'Tanggap Darurat', 'Pemulihan'];
 
+    public const WARNA_STATUS = [
+        'Siaga' => 'bg-warning text-dark',
+        'Tanggap Darurat' => 'bg-danger',
+        'Pemulihan' => 'bg-success',
+    ];
+
     public const DESA_PER_KECAMATAN = [
         'Bojongsoang' => ['Bojongsari', 'Bojongsoang', 'Buahbatu', 'Cipagalo', 'Lengkong', 'Tegalluar'],
         'Dayeuhkolot' => ['Cangkuang Kulon', 'Cangkuang Wetan', 'Citeureup', 'Dayeuhkolot', 'Pasawahan', 'Sukapura'],
