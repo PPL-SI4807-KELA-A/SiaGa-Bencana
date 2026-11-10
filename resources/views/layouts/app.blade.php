@@ -130,6 +130,15 @@
         .btn-sg { background: var(--sg-accent); border-color: var(--sg-accent); color: #fff; font-weight: 500; font-size: .8125rem; border-radius: 8px; padding: .5rem 1rem; }
         .btn-sg:hover, .btn-sg:focus { background: var(--sg-accent-hover); border-color: var(--sg-accent-hover); color: #fff; }
 
+        /* ===== PAGINATION — tema SiaGa (coklat), timpa default Bootstrap (biru) ===== */
+        .pagination {
+            --bs-pagination-color: var(--sg-accent);
+            --bs-pagination-hover-color: var(--sg-accent-hover);
+            --bs-pagination-focus-box-shadow: 0 0 0 .25rem rgba(92, 61, 46, .25);
+            --bs-pagination-active-bg: var(--sg-accent);
+            --bs-pagination-active-border-color: var(--sg-accent);
+        }
+
         /* ===== RESPONSIF ===== */
         .sidebar-toggle { display: none; }
         .sidebar-backdrop { display: none; }
@@ -162,40 +171,41 @@
     $badgeVerifikasi = 5;
 
     // Menu khusus peran Admin BPBD, sesuai mockup Figma.
-    // Menu untuk peran Warga/Pelapor dan Relawan Posko belum dibuat karena
-    // belum ada mockup/aturan bisnisnya -> menunggu konfirmasi tim.
+    // 'route' diisi nama route bila sudah pasti ada (DAHIF-1: wilayah-terdampak.index).
+    // Menu lain 'route' => null dulu, menunggu kabar nama route dari PIC masing-masing PBI.
     $menu = [
         'Utama' => [
-            ['key' => 'dasbor', 'label' => 'Dasbor', 'icon' => 'bi-grid-1x2', 'href' => '#'],
+            ['key' => 'dasbor', 'label' => 'Dasbor', 'icon' => 'bi-grid-1x2', 'route' => null],
         ],
         'Wilayah & Posko' => [
-            ['key' => 'wilayah', 'label' => 'Wilayah Terdampak', 'icon' => 'bi-geo-alt', 'href' => '#'],
-            ['key' => 'posko', 'label' => 'Data Posko', 'icon' => 'bi-house-door', 'href' => '#'],
-            ['key' => 'fasilitas', 'label' => 'Fasilitas Posko', 'icon' => 'bi-building', 'href' => '#'],
-            ['key' => 'pengungsi', 'label' => 'Data Pengungsi', 'icon' => 'bi-people', 'href' => '#'],
+            ['key' => 'wilayah', 'label' => 'Wilayah Terdampak', 'icon' => 'bi-geo-alt', 'route' => 'wilayah-terdampak.index'],
+            ['key' => 'posko', 'label' => 'Data Posko', 'icon' => 'bi-house-door', 'route' => null],
+            ['key' => 'fasilitas', 'label' => 'Fasilitas Posko', 'icon' => 'bi-building', 'route' => null],
+            ['key' => 'pengungsi', 'label' => 'Data Pengungsi', 'icon' => 'bi-people', 'route' => null],
         ],
         'Logistik' => [
-            ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'href' => '#'],
-            ['key' => 'sumber', 'label' => 'Sumber Bantuan', 'icon' => 'bi-gift', 'href' => '#'],
-            ['key' => 'stok', 'label' => 'Stok Logistik', 'icon' => 'bi-box-seam', 'href' => '#'],
-            ['key' => 'penerimaan', 'label' => 'Penerimaan', 'icon' => 'bi-box-arrow-in-down', 'href' => '#'],
-            ['key' => 'distribusi', 'label' => 'Distribusi', 'icon' => 'bi-truck', 'href' => '#'],
+            ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'route' => null],
+            ['key' => 'sumber', 'label' => 'Sumber Bantuan', 'icon' => 'bi-gift', 'route' => null],
+            ['key' => 'stok', 'label' => 'Stok Logistik', 'icon' => 'bi-box-seam', 'route' => null],
+            ['key' => 'penerimaan', 'label' => 'Penerimaan', 'icon' => 'bi-box-arrow-in-down', 'route' => null],
+            ['key' => 'distribusi', 'label' => 'Distribusi', 'icon' => 'bi-truck', 'route' => null],
         ],
         'Permintaan' => [
-            ['key' => 'mendesak', 'label' => 'Permintaan Mendesak', 'icon' => 'bi-megaphone', 'href' => '#'],
-            ['key' => 'tindaklanjut', 'label' => 'Tindak Lanjut Permintaan', 'icon' => 'bi-list-check', 'href' => '#'],
+            ['key' => 'mendesak', 'label' => 'Permintaan Mendesak', 'icon' => 'bi-megaphone', 'route' => null],
+            ['key' => 'tindaklanjut', 'label' => 'Tindak Lanjut Permintaan', 'icon' => 'bi-list-check', 'route' => null],
         ],
         'Laporan' => [
-            ['key' => 'kategori', 'label' => 'Kategori Bencana', 'icon' => 'bi-bookmark', 'href' => '#'],
-            ['key' => 'kejadian', 'label' => 'Laporan Kejadian', 'icon' => 'bi-file-earmark-text', 'href' => '#'],
-            ['key' => 'verifikasi', 'label' => 'Verifikasi Laporan', 'icon' => 'bi-patch-check', 'href' => '#', 'badge' => $badgeVerifikasi],
+            ['key' => 'kategori', 'label' => 'Kategori Bencana', 'icon' => 'bi-bookmark', 'route' => null],
+            ['key' => 'kejadian', 'label' => 'Laporan Kejadian', 'icon' => 'bi-file-earmark-text', 'route' => null],
+            ['key' => 'verifikasi', 'label' => 'Verifikasi Laporan', 'icon' => 'bi-patch-check', 'route' => null, 'badge' => $badgeVerifikasi],
         ],
         'Informasi Publik' => [
-            ['key' => 'pengumuman', 'label' => 'Pengumuman', 'icon' => 'bi-newspaper', 'href' => '#'],
-            ['key' => 'kontak', 'label' => 'Kontak Layanan', 'icon' => 'bi-telephone', 'href' => '#'],
+            ['key' => 'pengumuman', 'label' => 'Pengumuman', 'icon' => 'bi-newspaper', 'route' => null],
+            ['key' => 'kontak', 'label' => 'Kontak Layanan', 'icon' => 'bi-telephone', 'route' => null],
         ],
         'Sistem' => [
-            ['key' => 'keluar', 'label' => 'Keluar', 'icon' => 'bi-box-arrow-left', 'href' => '#'],
+            // Menu Keluar sengaja dibiarkan '#' -> menunggu CHORE Login (Dhafa)
+            ['key' => 'keluar', 'label' => 'Keluar', 'icon' => 'bi-box-arrow-left', 'route' => null],
         ],
     ];
 
@@ -226,7 +236,12 @@
             @foreach ($menu as $section => $items)
                 <div class="nav-section-label">{{ $section }}</div>
                 @foreach ($items as $item)
-                    <a href="{{ $item['href'] }}"
+                    @php
+                        $href = ($item['route'] ?? null) && \Illuminate\Support\Facades\Route::has($item['route'])
+                            ? route($item['route'])
+                            : '#';
+                    @endphp
+                    <a href="{{ $href }}"
                        class="nav-item-link {{ $menuAktif === $item['key'] ? 'active' : '' }}">
                         <i class="bi {{ $item['icon'] }}"></i>
                         <span>{{ $item['label'] }}</span>

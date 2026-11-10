@@ -63,11 +63,12 @@
 <body>
 @php
     // Menu publik untuk warga tanpa login. 'Posko Aktif' mengacu ke DAHIF-2.
-    // Route masih '#' karena belum tersedia -> ganti saat PBI terkait selesai.
+    // 'route' diisi null dulu untuk semua -> belum ada yang pasti route-nya,
+    // menunggu kabar dari PIC masing-masing PBI (Posko Aktif, Pengumuman, Kontak Layanan).
     $menuPublik = [
-        ['key' => 'posko-aktif', 'label' => 'Posko Aktif', 'href' => '#'],
-        ['key' => 'pengumuman', 'label' => 'Pengumuman', 'href' => '#'],
-        ['key' => 'kontak', 'label' => 'Kontak Layanan', 'href' => '#'],
+        ['key' => 'posko-aktif', 'label' => 'Posko Aktif', 'route' => null],
+        ['key' => 'pengumuman', 'label' => 'Pengumuman', 'route' => null],
+        ['key' => 'kontak', 'label' => 'Kontak Layanan', 'route' => null],
     ];
     $menuAktif = trim($__env->yieldContent('menu_aktif'));
 @endphp
@@ -86,7 +87,12 @@
     </div>
     <div class="d-flex align-items-center gap-4">
         @foreach ($menuPublik as $item)
-            <a href="{{ $item['href'] }}" class="guest-nav-link {{ $menuAktif === $item['key'] ? 'active' : '' }}">
+            @php
+                $href = ($item['route'] ?? null) && \Illuminate\Support\Facades\Route::has($item['route'])
+                    ? route($item['route'])
+                    : '#';
+            @endphp
+            <a href="{{ $href }}" class="guest-nav-link {{ $menuAktif === $item['key'] ? 'active' : '' }}">
                 {{ $item['label'] }}
             </a>
         @endforeach
