@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\PoskoController;
 use App\Http\Controllers\WilayahTerdampakController;
 
 Route::get('/', function () {
@@ -17,3 +18,8 @@ Route::resource('admin/wilayah-terdampak', WilayahTerdampakController::class)
 Route::resource('admin/barang', BarangController::class)
     ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
     ->names('barang');
+
+// DAHIF-2
+Route::resource('admin/posko', PoskoController::class)
+    ->except(['destroy'])
+    ->names('posko');
