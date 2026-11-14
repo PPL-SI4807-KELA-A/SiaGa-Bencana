@@ -42,12 +42,13 @@
                             <th class="text-end">Kapasitas</th>
                             <th class="text-end">Terisi</th>
                             <th class="text-end">Sisa</th>
+                            <th>Status Kesiapan</th>
                             <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($posko as $item)
-                            <tr>
+                            <tr class="{{ $item->is_aktif ? '' : 'table-secondary opacity-75' }}">
                                 <td>{{ $posko->firstItem() + $loop->index }}</td>
                                 <td class="fw-semibold">{{ $item->nama_posko }}</td>
                                 <td>{{ $item->desa_kelurahan }}, {{ $item->kecamatan }}</td>
@@ -55,6 +56,15 @@
                                 <td class="text-end">{{ number_format($item->kapasitas, 0, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($item->jumlah_terisi, 0, ',', '.') }}</td>
                                 <td class="text-end fw-semibold">{{ number_format($item->sisa_kapasitas, 0, ',', '.') }}</td>
+                                <td>
+                                    <span class="badge {{ \App\Models\Posko::WARNA_STATUS_KESIAPAN[$item->status_kesiapan] }}">{{ $item->status_kesiapan }}</span>
+                                    @unless ($item->is_aktif)
+                                        <span class="badge bg-dark">Nonaktif</span>
+                                    @endunless
+                                    <div class="progress mt-2" role="progressbar" aria-label="Keterisian {{ $item->nama_posko }}" aria-valuenow="{{ $item->persentase_terisi }}" aria-valuemin="0" aria-valuemax="100" style="height: .4rem;">
+                                        <div class="progress-bar {{ \App\Models\Posko::WARNA_STATUS_KESIAPAN[$item->status_kesiapan] }}" style="width: {{ min($item->persentase_terisi, 100) }}%"></div>
+                                    </div>
+                                </td>
                                 <td class="text-end text-nowrap">
                                     <a href="{{ route('posko.show', $item) }}" class="btn btn-sm btn-outline-secondary" aria-label="Detail {{ $item->nama_posko }}"><i class="bi bi-eye"></i></a>
                                     <a href="{{ route('posko.edit', $item) }}" class="btn btn-sm btn-outline-primary" aria-label="Ubah {{ $item->nama_posko }}"><i class="bi bi-pencil"></i></a>

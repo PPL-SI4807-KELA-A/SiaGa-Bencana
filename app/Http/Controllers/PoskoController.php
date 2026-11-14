@@ -52,6 +52,32 @@ class PoskoController extends Controller
             ->with('success', 'Data posko berhasil diperbarui.');
     }
 
+    public function toggleStatusOperasional(Posko $posko): RedirectResponse
+    {
+        $posko->status_operasional = $posko->status_operasional === 'Beroperasi'
+            ? 'Tidak Beroperasi'
+            : 'Beroperasi';
+        $posko->save();
+
+        $message = $posko->status_operasional === 'Tidak Beroperasi'
+            ? 'Posko ditandai Tidak Beroperasi.'
+            : 'Posko ditandai Beroperasi kembali.';
+
+        return redirect()->route('posko.show', $posko)->with('success', $message);
+    }
+
+    public function toggleAktif(Posko $posko): RedirectResponse
+    {
+        $posko->is_aktif = ! $posko->is_aktif;
+        $posko->save();
+
+        $message = $posko->is_aktif
+            ? 'Posko berhasil diaktifkan kembali.'
+            : 'Posko berhasil dinonaktifkan.';
+
+        return redirect()->route('posko.show', $posko)->with('success', $message);
+    }
+
     private function formOptions(): array
     {
         return [

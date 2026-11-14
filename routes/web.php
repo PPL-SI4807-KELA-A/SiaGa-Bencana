@@ -20,6 +20,13 @@ Route::resource('admin/barang', BarangController::class)
     ->names('barang');
 
 // DAHIF-2
+Route::patch('admin/posko/{posko}/status-operasional', [PoskoController::class, 'toggleStatusOperasional'])
+    ->name('posko.status-operasional');
+Route::patch('admin/posko/{posko}/aktif', [PoskoController::class, 'toggleAktif'])
+    ->name('posko.aktif');
+Route::get('posko', [\App\Http\Controllers\PoskoPublikController::class, 'index'])
+    ->name('posko.publik');
+
 Route::resource('admin/posko', PoskoController::class)
     ->except(['destroy'])
     ->names('posko');

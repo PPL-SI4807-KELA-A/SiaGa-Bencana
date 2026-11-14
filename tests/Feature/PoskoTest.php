@@ -131,6 +131,67 @@ class PoskoTest extends TestCase
         $this->assertDatabaseHas('posko', ['id' => $posko->id]);
     }
 
+    public function test_index_and_detail_show_readiness_badge(): void
+    {
+        // 40 dari 50 terisi (80%) harus berstatus Hampir Penuh
+        $posko = Posko::create(array_merge($this->validData(), [
+            'nama_posko' => 'Posko Badge Uji',
+            'kapasitas' => 50,
+            'jumlah_terisi' => 40,
+        ]));
+
+        $this->get(route('posko.index'))
+            ->assertOk()
+            ->assertSee('Hampir Penuh');
+
+        $this->get(route('posko.show', $posko))
+            ->assertOk()
+            ->assertSee('Hampir Penuh');
+    }
+
+    public function test_operational_status_can_be_toggled_in_both_directions(): void
+    {
+        $posko = Posko::create($this->validData());
+
+        $this->patch(route('posko.status-operasional', $posko))
+            ->assertRedirect(route('posko.show', $posko))
+            ->assertSessionHas('success', 'Posko ditandai Tidak Beroperasi.');
+        $this->assertDatabaseHas('posko', ['id' => $posko->id, 'status_operasional' => 'Tidak Beroperasi']);
+
+        $this->patch(route('posko.status-operasional', $posko), [
+            'status_operasional' => 'Nilai Bebas',
+            'is_aktif' => false,
+        ])->assertSessionHas('success', 'Posko ditandai Beroperasi kembali.');
+
+        $this->assertDatabaseHas('posko', [
+            'id' => $posko->id,
+            'status_operasional' => 'Beroperasi',
+            'is_aktif' => true,
+        ]);
+    }
+
+    public function test_active_status_can_be_toggled_in_both_directions_without_free_input(): void
+    {
+        $posko = Posko::create($this->validData());
+
+        $this->patch(route('posko.aktif', $posko), [
+            'is_aktif' => true,
+            'status_operasional' => 'Tidak Beroperasi',
+        ])->assertRedirect(route('posko.show', $posko))
+            ->assertSessionHas('success', 'Posko berhasil dinonaktifkan.');
+
+        $this->assertDatabaseHas('posko', [
+            'id' => $posko->id,
+            'is_aktif' => false,
+            'status_operasional' => 'Beroperasi',
+        ]);
+
+        $this->patch(route('posko.aktif', $posko))
+            ->assertSessionHas('success', 'Posko berhasil diaktifkan kembali.');
+
+        $this->assertDatabaseHas('posko', ['id' => $posko->id, 'is_aktif' => true]);
+    }
+
     private function validData(): array
     {
         return [
