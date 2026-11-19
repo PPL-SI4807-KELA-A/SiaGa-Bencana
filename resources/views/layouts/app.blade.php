@@ -195,8 +195,8 @@
             ['key' => 'tindaklanjut', 'label' => 'Tindak Lanjut Permintaan', 'icon' => 'bi-list-check', 'route' => null],
         ],
         'Laporan' => [
-            ['key' => 'kategori', 'label' => 'Kategori Bencana', 'icon' => 'bi-bookmark', 'route' => null],
-            ['key' => 'kejadian', 'label' => 'Laporan Kejadian', 'icon' => 'bi-file-earmark-text', 'route' => null],
+            ['key' => 'kategori', 'label' => 'Kategori Bencana', 'icon' => 'bi-bookmark', 'route' => 'kategori-bencana.index'],
+            ['key' => 'kejadian', 'label' => 'Laporan Kejadian', 'icon' => 'bi-file-earmark-text', 'route' => 'laporan-kejadian.index'],
             ['key' => 'verifikasi', 'label' => 'Verifikasi Laporan', 'icon' => 'bi-patch-check', 'route' => null, 'badge' => $badgeVerifikasi],
         ],
         'Informasi Publik' => [

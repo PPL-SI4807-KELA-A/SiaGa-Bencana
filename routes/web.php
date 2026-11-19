@@ -7,6 +7,8 @@ use App\Http\Controllers\PoskoController;
 use App\Http\Controllers\WilayahTerdampakController;
 use App\Http\Controllers\SumberBantuanController;
 use App\Http\Controllers\KategoriBencanaController;
+use App\Http\Controllers\LaporanKejadianController;
+use App\Http\Controllers\LaporanKejadianPublikController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -56,3 +58,15 @@ Route::resource('sumber-bantuan', SumberBantuanController::class)
 Route::resource('kategori-bencana', KategoriBencanaController::class)
     ->except('show')
     ->parameters(['kategori-bencana' => 'kategori_bencana']);
+//DAFIF-9
+Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(function () {
+    Route::get('/', [LaporanKejadianPublikController::class, 'create'])->name('create');
+    Route::post('/', [LaporanKejadianPublikController::class, 'store'])->name('store');
+    Route::get('/cek', [LaporanKejadianPublikController::class, 'cek'])->name('cek');
+    Route::get('/{kode}', [LaporanKejadianPublikController::class, 'show'])->name('show');
+    Route::get('/{kode}/ubah', [LaporanKejadianPublikController::class, 'edit'])->name('edit');
+    Route::put('/{kode}', [LaporanKejadianPublikController::class, 'update'])->name('update');
+    Route::delete('/{kode}', [LaporanKejadianPublikController::class, 'destroy'])->name('destroy');
+});
+Route::get('laporan-kejadian', [LaporanKejadianController::class, 'index'])->name('laporan-kejadian.index');
+Route::get('laporan-kejadian/{laporan}', [LaporanKejadianController::class, 'show'])->name('laporan-kejadian.show');
