@@ -185,7 +185,7 @@
         ],
         'Logistik' => [
             ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'route' => null],
-            ['key' => 'sumber', 'label' => 'Sumber Bantuan', 'icon' => 'bi-gift', 'route' => null],
+            ['key' => 'sumber', 'label' => 'Sumber Bantuan', 'icon' => 'bi-gift', 'route' => 'sumber-bantuan.index'],
             ['key' => 'stok', 'label' => 'Stok Logistik', 'icon' => 'bi-box-seam', 'route' => null],
             ['key' => 'penerimaan', 'label' => 'Penerimaan', 'icon' => 'bi-box-arrow-in-down', 'route' => null],
             ['key' => 'distribusi', 'label' => 'Distribusi', 'icon' => 'bi-truck', 'route' => null],
