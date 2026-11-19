@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\PoskoController;
 use App\Http\Controllers\WilayahTerdampakController;
+use App\Http\Controllers\SumberBantuanController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -30,3 +31,8 @@ Route::get('posko', [\App\Http\Controllers\PoskoPublikController::class, 'index'
 Route::resource('admin/posko', PoskoController::class)
     ->except(['destroy'])
     ->names('posko');
+
+// DAHIF-4
+Route::resource('sumber-bantuan', SumberBantuanController::class)
+    ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+    ->names('sumber-bantuan');
