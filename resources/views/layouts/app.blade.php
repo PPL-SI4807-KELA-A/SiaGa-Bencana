@@ -179,12 +179,12 @@
         ],
         'Wilayah & Posko' => [
             ['key' => 'wilayah', 'label' => 'Wilayah Terdampak', 'icon' => 'bi-geo-alt', 'route' => 'wilayah-terdampak.index'],
-            ['key' => 'posko', 'label' => 'Data Posko', 'icon' => 'bi-house-door', 'route' => null],
+            ['key' => 'posko', 'label' => 'Data Posko', 'icon' => 'bi-house-door', 'route' => 'posko.index'],
             ['key' => 'fasilitas', 'label' => 'Fasilitas Posko', 'icon' => 'bi-building', 'route' => null],
             ['key' => 'pengungsi', 'label' => 'Data Pengungsi', 'icon' => 'bi-people', 'route' => null],
         ],
         'Logistik' => [
-            ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'route' => null],
+            ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'route' => 'barang.index'],
             ['key' => 'sumber', 'label' => 'Sumber Bantuan', 'icon' => 'bi-gift', 'route' => 'sumber-bantuan.index'],
             ['key' => 'stok', 'label' => 'Stok Logistik', 'icon' => 'bi-box-seam', 'route' => null],
             ['key' => 'penerimaan', 'label' => 'Penerimaan', 'icon' => 'bi-box-arrow-in-down', 'route' => null],
@@ -204,8 +204,7 @@
             ['key' => 'kontak', 'label' => 'Kontak Layanan', 'icon' => 'bi-telephone', 'route' => null],
         ],
         'Sistem' => [
-            // Menu Keluar sengaja dibiarkan '#' -> menunggu CHORE Login (Dhafa)
-            ['key' => 'keluar', 'label' => 'Keluar', 'icon' => 'bi-box-arrow-left', 'route' => null],
+            ['key' => 'keluar', 'label' => 'Keluar', 'icon' => 'bi-box-arrow-left', 'route' => 'logout'],
         ],
     ];
 
@@ -236,19 +235,31 @@
             @foreach ($menu as $section => $items)
                 <div class="nav-section-label">{{ $section }}</div>
                 @foreach ($items as $item)
-                    @php
-                        $href = ($item['route'] ?? null) && \Illuminate\Support\Facades\Route::has($item['route'])
-                            ? route($item['route'])
-                            : '#';
-                    @endphp
-                    <a href="{{ $href }}"
-                       class="nav-item-link {{ $menuAktif === $item['key'] ? 'active' : '' }}">
-                        <i class="bi {{ $item['icon'] }}"></i>
-                        <span>{{ $item['label'] }}</span>
-                        @isset($item['badge'])
-                            <span class="nav-badge">{{ $item['badge'] }}</span>
-                        @endisset
-                    </a>
+                    @if ($item['key'] === 'keluar')
+                        @auth
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="nav-item-link w-100 text-start bg-transparent">
+                                <i class="bi {{ $item['icon'] }}"></i>
+                                <span>{{ $item['label'] }}</span>
+                            </button>
+                        </form>
+                        @endauth
+                    @else
+                        @php
+                            $href = ($item['route'] ?? null) && \Illuminate\Support\Facades\Route::has($item['route'])
+                                ? route($item['route'])
+                                : '#';
+                        @endphp
+                        <a href="{{ $href }}"
+                           class="nav-item-link {{ $menuAktif === $item['key'] ? 'active' : '' }}">
+                            <i class="bi {{ $item['icon'] }}"></i>
+                            <span>{{ $item['label'] }}</span>
+                            @isset($item['badge'])
+                                <span class="nav-badge">{{ $item['badge'] }}</span>
+                            @endisset
+                        </a>
+                    @endif
                 @endforeach
             @endforeach
         </nav>

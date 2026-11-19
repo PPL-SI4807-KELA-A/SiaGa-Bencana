@@ -3,12 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\WilayahTerdampak;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class WilayahTerdampakTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     public function test_index_page_is_available(): void
     {
