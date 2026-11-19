@@ -5,6 +5,7 @@ use App\Http\Controllers\BarangController;
 use App\Http\Controllers\PoskoController;
 use App\Http\Controllers\WilayahTerdampakController;
 use App\Http\Controllers\SumberBantuanController;
+use App\Http\Controllers\KategoriBencanaController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -36,3 +37,7 @@ Route::resource('admin/posko', PoskoController::class)
 Route::resource('sumber-bantuan', SumberBantuanController::class)
     ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
     ->names('sumber-bantuan');
+// DAFIF-8
+Route::resource('kategori-bencana', KategoriBencanaController::class)
+    ->except('show')
+    ->parameters(['kategori-bencana' => 'kategori_bencana']);
