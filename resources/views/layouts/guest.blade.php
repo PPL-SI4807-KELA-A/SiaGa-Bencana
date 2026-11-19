@@ -66,7 +66,7 @@
     // 'route' diisi null dulu untuk semua -> belum ada yang pasti route-nya,
     // menunggu kabar dari PIC masing-masing PBI (Posko Aktif, Pengumuman, Kontak Layanan).
     $menuPublik = [
-        ['key' => 'posko-aktif', 'label' => 'Posko Aktif', 'route' => null],
+        ['key' => 'posko-aktif', 'label' => 'Posko Aktif', 'route' => 'posko.publik'],
         ['key' => 'pengumuman', 'label' => 'Pengumuman', 'route' => null],
         ['key' => 'kontak', 'label' => 'Kontak Layanan', 'route' => null],
     ];
@@ -96,7 +96,9 @@
                 {{ $item['label'] }}
             </a>
         @endforeach
-        <a href="#" class="btn btn-sg btn-sm">Masuk</a>
+        @guest
+            <a href="{{ route('login') }}" class="btn btn-sg btn-sm">Masuk</a>
+        @endguest
     </div>
 </nav>
 

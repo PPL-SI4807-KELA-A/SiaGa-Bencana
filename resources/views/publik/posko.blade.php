@@ -14,6 +14,13 @@
 
 @section('content')
 <div class="container-fluid px-0">
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="status">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+        </div>
+    @endif
+
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">Posko Pengungsian Aktif</h1>

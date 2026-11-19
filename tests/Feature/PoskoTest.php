@@ -3,12 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\Posko;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PoskoTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     public function test_index_and_create_pages_are_available(): void
     {

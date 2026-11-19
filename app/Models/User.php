@@ -13,6 +13,8 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const PERAN = ['Admin BPBD', 'Relawan Posko'];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -22,6 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'posko_id',
     ];
 
     /**
@@ -45,5 +49,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isAdminBpbd(): bool
+    {
+        return $this->role === 'Admin BPBD';
     }
 }
