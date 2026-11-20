@@ -3,12 +3,16 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\PermintaanMendesakController;
 use App\Http\Controllers\PoskoController;
 use App\Http\Controllers\WilayahTerdampakController;
 use App\Http\Controllers\SumberBantuanController;
 use App\Http\Controllers\KategoriBencanaController;
 use App\Http\Controllers\LaporanKejadianController;
 use App\Http\Controllers\LaporanKejadianPublikController;
+use App\Http\Controllers\PengungsiController;
+use App\Http\Controllers\StokPoskoController;
+use App\Models\PermintaanMendesak;
 
 Route::redirect('/', '/posko');
 
@@ -38,6 +42,34 @@ Route::resource('admin/barang', BarangController::class)
     ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
     ->names('barang');
 
+// DAHIF-7: semua route detail menggunakan kode pelacakan sebagai route key.
+Route::bind('kode_pelacakan', function (string $value) {
+    return PermintaanMendesak::query()
+        ->where('kode_pelacakan', $value)
+        ->firstOrFail();
+});
+
+Route::get('/permintaan-mendesak/create', [PermintaanMendesakController::class, 'create'])
+    ->name('permintaan-mendesak.create');
+Route::post('/permintaan-mendesak', [PermintaanMendesakController::class, 'store'])
+    ->name('permintaan-mendesak.store');
+Route::get('/permintaan-mendesak/lacak', [PermintaanMendesakController::class, 'lacak'])
+    ->name('permintaan-mendesak.lacak');
+Route::post('/permintaan-mendesak/lacak', [PermintaanMendesakController::class, 'prosesLacak'])
+    ->name('permintaan-mendesak.proses-lacak');
+Route::get('/permintaan-mendesak/{kode_pelacakan}/edit', [PermintaanMendesakController::class, 'edit'])
+    ->name('permintaan-mendesak.edit');
+Route::put('/permintaan-mendesak/{kode_pelacakan}', [PermintaanMendesakController::class, 'update'])
+    ->name('permintaan-mendesak.update');
+Route::patch('/permintaan-mendesak/{kode_pelacakan}', [PermintaanMendesakController::class, 'update']);
+Route::delete('/permintaan-mendesak/{kode_pelacakan}', [PermintaanMendesakController::class, 'destroy'])
+    ->name('permintaan-mendesak.destroy');
+Route::get('/permintaan-mendesak/{kode_pelacakan}', [PermintaanMendesakController::class, 'show'])
+    ->name('permintaan-mendesak.show');
+
+Route::get('/admin/permintaan-mendesak', [PermintaanMendesakController::class, 'index'])
+    ->name('admin.permintaan-mendesak.index');
+
 // DAHIF-2
 Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
     Route::patch('admin/posko/{posko}/status-operasional', [PoskoController::class, 'toggleStatusOperasional'])
@@ -55,11 +87,13 @@ Route::get('posko', [\App\Http\Controllers\PoskoPublikController::class, 'index'
 Route::resource('sumber-bantuan', SumberBantuanController::class)
     ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
     ->names('sumber-bantuan');
+
 // DAFIF-8
 Route::resource('kategori-bencana', KategoriBencanaController::class)
     ->except('show')
     ->parameters(['kategori-bencana' => 'kategori_bencana']);
-//DAFIF-9
+
+// DAFIF-9
 Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(function () {
     Route::get('/', [LaporanKejadianPublikController::class, 'create'])->name('create');
     Route::post('/', [LaporanKejadianPublikController::class, 'store'])->name('store');
@@ -71,3 +105,17 @@ Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(functio
 });
 Route::get('laporan-kejadian', [LaporanKejadianController::class, 'index'])->name('laporan-kejadian.index');
 Route::get('laporan-kejadian/{laporan}', [LaporanKejadianController::class, 'show'])->name('laporan-kejadian.show');
+
+// DAHIF-3
+Route::resource('relawan/pengungsi', PengungsiController::class)
+    ->only(['index', 'store', 'update', 'destroy'])
+    ->parameters(['pengungsi' => 'pengungsi'])
+    ->names('pengungsi');
+
+// DAHIF-5
+Route::prefix('stok-logistik')->name('stok-posko.')->group(function () {
+    Route::get('/', [StokPoskoController::class, 'index'])->name('index');
+    Route::post('/', [StokPoskoController::class, 'store'])->name('store');
+    Route::patch('/{stokPosko}', [StokPoskoController::class, 'update'])->name('update');
+    Route::delete('/{stokPosko}', [StokPoskoController::class, 'destroy'])->name('destroy');
+});
