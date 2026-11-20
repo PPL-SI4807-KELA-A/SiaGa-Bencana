@@ -1,8 +1,14 @@
-@extends('layouts.app')
-@section('judul', 'Cek Status Laporan')
-@section('subjudul', 'Masukkan kode pelacakan yang Anda terima saat mengirim laporan')
+@extends('layouts.guest')
+@section('title', 'Cek Status Laporan')
+@section('menu_aktif', 'lapor-kejadian')
 
 @section('content')
+<div class="container-fluid px-0">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Cek Status Laporan</h1>
+        <p class="text-body-secondary mb-0">Masukkan kode pelacakan yang Anda terima saat mengirim laporan.</p>
+    </div>
+
 @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 @if($tidakDitemukan)
     <div class="alert alert-danger">Kode "{{ $kode }}" tidak ditemukan.</div>
@@ -21,5 +27,6 @@
             <a href="{{ route('laporan-kejadian.publik.create') }}" class="btn btn-outline-secondary">Buat Laporan Baru</a>
         </div>
     </form>
+</div>
 </div>
 @endsection

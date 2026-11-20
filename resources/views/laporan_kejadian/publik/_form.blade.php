@@ -42,3 +42,46 @@
 
 <div class="mb-3">
     <label class="form-label">Lokasi <span class="text-danger">*</span></label>
+    <input type="text" name="lokasi" maxlength="255" required
+           class="form-control @error('lokasi') is-invalid @enderror"
+           placeholder="Nama jalan, RT/RW, atau patokan"
+           value="{{ old('lokasi', $l->lokasi ?? '') }}">
+    @error('lokasi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Deskripsi kondisi <span class="text-danger">*</span></label>
+    <textarea name="deskripsi" rows="4" required
+              class="form-control @error('deskripsi') is-invalid @enderror">{{ old('deskripsi', $l->deskripsi ?? '') }}</textarea>
+    @error('deskripsi')<div class="invalid-feedback">{{ $message }}</div>@enderror
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Nama pelapor</label>
+        <input type="text" name="nama_pelapor" maxlength="100"
+               class="form-control @error('nama_pelapor') is-invalid @enderror"
+               value="{{ old('nama_pelapor', $l->nama_pelapor ?? '') }}">
+        @error('nama_pelapor')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Kontak pelapor <span class="text-danger">*</span></label>
+        <input type="text" name="kontak_pelapor" maxlength="20" required
+               class="form-control @error('kontak_pelapor') is-invalid @enderror"
+               placeholder="Nomor HP/WhatsApp"
+               value="{{ old('kontak_pelapor', $l->kontak_pelapor ?? '') }}">
+        @error('kontak_pelapor')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Foto kejadian</label>
+    <input type="file" name="foto" accept=".jpg,.jpeg,.png"
+           class="form-control @error('foto') is-invalid @enderror">
+    <div class="form-text">JPG/PNG, maks 2 MB</div>
+    @if($l?->foto)
+        <div class="form-text">Foto lama tetap dipakai jika tidak diganti.</div>
+    @endif
+    @error('foto')<div class="invalid-feedback">{{ $message }}</div>@enderror
+</div>

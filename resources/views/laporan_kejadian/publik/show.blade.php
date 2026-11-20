@@ -1,8 +1,14 @@
-@extends('layouts.app')
-@section('judul', 'Status Laporan')
-@section('subjudul', 'Simpan kode pelacakan untuk memantau laporan Anda')
+@extends('layouts.guest')
+@section('title', 'Status Laporan')
+@section('menu_aktif', 'lapor-kejadian')
 
 @section('content')
+<div class="container-fluid px-0">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Status Laporan</h1>
+        <p class="text-body-secondary mb-0">Simpan kode pelacakan untuk memantau laporan Anda.</p>
+    </div>
+
 @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 @if(session('error'))<div class="alert alert-danger">{{ session('error') }}</div>@endif
 
@@ -51,5 +57,6 @@
             </form>
         </div>
     @endunless
+</div>
 </div>
 @endsection
