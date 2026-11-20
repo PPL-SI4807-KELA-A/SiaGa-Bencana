@@ -10,6 +10,7 @@ use App\Http\Controllers\SumberBantuanController;
 use App\Http\Controllers\KategoriBencanaController;
 use App\Http\Controllers\LaporanKejadianController;
 use App\Http\Controllers\LaporanKejadianPublikController;
+use App\Http\Controllers\PengungsiController;
 use App\Models\PermintaanMendesak;
 
 Route::get('/', function () {
@@ -100,3 +101,9 @@ Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(functio
 });
 Route::get('laporan-kejadian', [LaporanKejadianController::class, 'index'])->name('laporan-kejadian.index');
 Route::get('laporan-kejadian/{laporan}', [LaporanKejadianController::class, 'show'])->name('laporan-kejadian.show');
+
+// DAHIF-3
+Route::resource('relawan/pengungsi', PengungsiController::class)
+    ->only(['index', 'store', 'update', 'destroy'])
+    ->parameters(['pengungsi' => 'pengungsi'])
+    ->names('pengungsi');
