@@ -73,6 +73,15 @@ class StokPoskoTest extends TestCase
             ->assertDontSee('Selimut Posko 2');
     }
 
+    public function test_relawan_sees_staff_layout_and_add_stock_button(): void
+    {
+        $this->actingAs($this->relawan(1))
+            ->get(route('stok-posko.index'))
+            ->assertOk()
+            ->assertSee('Keluar')
+            ->assertSee('Tambah Barang ke Stok');
+    }
+
     public function test_admin_melihat_semua_posko_dan_bisa_filter_posko(): void
     {
         $this->buatStok(['posko_id' => 1, 'nama_posko' => 'Posko Utama', 'kode_barang' => 'BRG-001', 'nama_barang' => 'Beras Utama']);
