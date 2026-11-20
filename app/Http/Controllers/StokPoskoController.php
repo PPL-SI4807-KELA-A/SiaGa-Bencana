@@ -9,8 +9,8 @@ use Illuminate\Validation\Rule;
 
 class StokPoskoController extends Controller
 {
-    private const ROLE_ADMIN = 'admin';
-    private const ROLE_RELAWAN = 'relawan';
+    private const ROLE_ADMIN = 'Admin BPBD';
+    private const ROLE_RELAWAN = 'Relawan Posko';
 
     private const KATEGORI = ['pangan', 'sandang', 'obat-obatan', 'perlengkapan bayi', 'kebersihan'];
 
