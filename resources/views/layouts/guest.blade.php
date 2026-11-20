@@ -67,6 +67,8 @@
     // menunggu kabar dari PIC masing-masing PBI (Posko Aktif, Pengumuman, Kontak Layanan).
     $menuPublik = [
         ['key' => 'posko-aktif', 'label' => 'Posko Aktif', 'route' => 'posko.publik'],
+        ['key' => 'lapor-kejadian', 'label' => 'Lapor Kejadian', 'route' => 'laporan-kejadian.publik.create'],
+        ['key' => 'ajukan-permintaan', 'label' => 'Ajukan Permintaan', 'route' => 'permintaan-mendesak.create'],
         ['key' => 'pengumuman', 'label' => 'Pengumuman', 'route' => null],
         ['key' => 'kontak', 'label' => 'Kontak Layanan', 'route' => null],
     ];
@@ -96,6 +98,9 @@
                 {{ $item['label'] }}
             </a>
         @endforeach
+        @auth
+            <a href="{{ route('dasbor') }}" class="btn btn-sg btn-sm">Dasbor</a>
+        @endauth
         @guest
             <a href="{{ route('login') }}" class="btn btn-sg btn-sm">Masuk</a>
         @endguest

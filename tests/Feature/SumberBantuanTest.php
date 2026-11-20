@@ -3,12 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\SumberBantuan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SumberBantuanTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     private function data(array $override = []): array
     {

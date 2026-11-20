@@ -4,14 +4,23 @@ namespace Tests\Feature;
 
 use App\Models\KategoriBencana;
 use App\Models\LaporanKejadian;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class LaporanKejadianTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     private function kategori(bool $aktif = true): KategoriBencana
     {
@@ -48,6 +57,23 @@ class LaporanKejadianTest extends TestCase
             ->assertOk()
             ->assertSee('Banjir')
             ->assertDontSee('Kategori Lama');
+    }
+
+    public function test_guest_can_open_public_report_form_and_tracking_check_page(): void
+    {
+        Auth::logout();
+        $this->assertGuest();
+
+        $this->get(route('laporan-kejadian.publik.create'))
+            ->assertOk()
+            ->assertSee('name="lokasi"', false)
+            ->assertSee('name="deskripsi"', false)
+            ->assertSee('name="nama_pelapor"', false)
+            ->assertSee('name="kontak_pelapor"', false)
+            ->assertSee('name="foto"', false)
+            ->assertDontSee('Stok Logistik');
+
+        $this->get(route('laporan-kejadian.publik.cek'))->assertOk();
     }
 
     public function test_kirim_laporan_berhasil_dengan_kode_pelacakan(): void

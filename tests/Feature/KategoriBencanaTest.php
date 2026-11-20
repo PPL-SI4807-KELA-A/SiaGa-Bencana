@@ -3,12 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\KategoriBencana;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class KategoriBencanaTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     public function test_halaman_index_menampilkan_data(): void
     {

@@ -175,13 +175,13 @@
     // Menu lain 'route' => null dulu, menunggu kabar nama route dari PIC masing-masing PBI.
     $menu = [
         'Utama' => [
-            ['key' => 'dasbor', 'label' => 'Dasbor', 'icon' => 'bi-grid-1x2', 'route' => null],
+            ['key' => 'dasbor', 'label' => 'Dasbor', 'icon' => 'bi-grid-1x2', 'route' => 'dasbor'],
         ],
         'Wilayah & Posko' => [
             ['key' => 'wilayah', 'label' => 'Wilayah Terdampak', 'icon' => 'bi-geo-alt', 'route' => 'wilayah-terdampak.index'],
             ['key' => 'posko', 'label' => 'Data Posko', 'icon' => 'bi-house-door', 'route' => 'posko.index'],
             ['key' => 'fasilitas', 'label' => 'Fasilitas Posko', 'icon' => 'bi-building', 'route' => null],
-            ['key' => 'pengungsi', 'label' => 'Data Pengungsi', 'icon' => 'bi-people', 'route' => null],
+            ['key' => 'pengungsi', 'label' => 'Data Pengungsi', 'icon' => 'bi-people', 'route' => 'pengungsi.index'],
         ],
         'Logistik' => [
             ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'route' => 'barang.index'],
@@ -191,7 +191,7 @@
             ['key' => 'distribusi', 'label' => 'Distribusi', 'icon' => 'bi-truck', 'route' => null],
         ],
         'Permintaan' => [
-            ['key' => 'mendesak', 'label' => 'Permintaan Mendesak', 'icon' => 'bi-megaphone', 'route' => null],
+            ['key' => 'mendesak', 'label' => 'Permintaan Mendesak', 'icon' => 'bi-megaphone', 'route' => 'admin.permintaan-mendesak.index'],
             ['key' => 'tindaklanjut', 'label' => 'Tindak Lanjut Permintaan', 'icon' => 'bi-list-check', 'route' => null],
         ],
         'Laporan' => [

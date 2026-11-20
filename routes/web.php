@@ -14,9 +14,7 @@ use App\Http\Controllers\PengungsiController;
 use App\Http\Controllers\StokPoskoController;
 use App\Models\PermintaanMendesak;
 
-Route::get('/', function () {
-    return view('dashboard');
-});
+Route::redirect('/', '/posko');
 
 // CHORE Login
 Route::middleware('guest')->group(function () {
@@ -28,6 +26,9 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+Route::get('/dasbor', fn () => view('dashboard'))
+    ->middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])
+    ->name('dasbor');
 
 // DAHIF-1
 Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
@@ -37,9 +38,11 @@ Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
 });
 
 // DAHIF-6
-Route::resource('admin/barang', BarangController::class)
-    ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
-    ->names('barang');
+Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
+    Route::resource('admin/barang', BarangController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+        ->names('barang');
+});
 
 // DAHIF-7: semua route detail menggunakan kode pelacakan sebagai route key.
 Route::bind('kode_pelacakan', function (string $value) {
@@ -66,8 +69,10 @@ Route::delete('/permintaan-mendesak/{kode_pelacakan}', [PermintaanMendesakContro
 Route::get('/permintaan-mendesak/{kode_pelacakan}', [PermintaanMendesakController::class, 'show'])
     ->name('permintaan-mendesak.show');
 
-Route::get('/admin/permintaan-mendesak', [PermintaanMendesakController::class, 'index'])
-    ->name('admin.permintaan-mendesak.index');
+Route::middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])->group(function () {
+    Route::get('/admin/permintaan-mendesak', [PermintaanMendesakController::class, 'index'])
+        ->name('admin.permintaan-mendesak.index');
+});
 
 // DAHIF-2
 Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
@@ -83,16 +88,20 @@ Route::get('posko', [\App\Http\Controllers\PoskoPublikController::class, 'index'
     ->name('posko.publik');
 
 // DAHIF-4
-Route::resource('sumber-bantuan', SumberBantuanController::class)
-    ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
-    ->names('sumber-bantuan');
+Route::middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])->group(function () {
+    Route::resource('sumber-bantuan', SumberBantuanController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+        ->names('sumber-bantuan');
+});
 
-// DAFIF-8
-Route::resource('kategori-bencana', KategoriBencanaController::class)
-    ->except('show')
-    ->parameters(['kategori-bencana' => 'kategori_bencana']);
+// DAHIF-8
+Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
+    Route::resource('kategori-bencana', KategoriBencanaController::class)
+        ->except('show')
+        ->parameters(['kategori-bencana' => 'kategori_bencana']);
+});
 
-// DAFIF-9
+// DAHIF-9
 Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(function () {
     Route::get('/', [LaporanKejadianPublikController::class, 'create'])->name('create');
     Route::post('/', [LaporanKejadianPublikController::class, 'store'])->name('store');
@@ -102,19 +111,25 @@ Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(functio
     Route::put('/{kode}', [LaporanKejadianPublikController::class, 'update'])->name('update');
     Route::delete('/{kode}', [LaporanKejadianPublikController::class, 'destroy'])->name('destroy');
 });
-Route::get('laporan-kejadian', [LaporanKejadianController::class, 'index'])->name('laporan-kejadian.index');
-Route::get('laporan-kejadian/{laporan}', [LaporanKejadianController::class, 'show'])->name('laporan-kejadian.show');
+Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
+    Route::get('laporan-kejadian', [LaporanKejadianController::class, 'index'])->name('laporan-kejadian.index');
+    Route::get('laporan-kejadian/{laporan}', [LaporanKejadianController::class, 'show'])->name('laporan-kejadian.show');
+});
 
 // DAHIF-3
-Route::resource('relawan/pengungsi', PengungsiController::class)
-    ->only(['index', 'store', 'update', 'destroy'])
-    ->parameters(['pengungsi' => 'pengungsi'])
-    ->names('pengungsi');
+Route::middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])->group(function () {
+    Route::resource('relawan/pengungsi', PengungsiController::class)
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->parameters(['pengungsi' => 'pengungsi'])
+        ->names('pengungsi');
+});
 
 // DAHIF-5
-Route::prefix('stok-logistik')->name('stok-posko.')->group(function () {
-    Route::get('/', [StokPoskoController::class, 'index'])->name('index');
-    Route::post('/', [StokPoskoController::class, 'store'])->name('store');
-    Route::patch('/{stokPosko}', [StokPoskoController::class, 'update'])->name('update');
-    Route::delete('/{stokPosko}', [StokPoskoController::class, 'destroy'])->name('destroy');
+Route::middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])->group(function () {
+    Route::prefix('stok-logistik')->name('stok-posko.')->group(function () {
+        Route::get('/', [StokPoskoController::class, 'index'])->name('index');
+        Route::post('/', [StokPoskoController::class, 'store'])->name('store');
+        Route::patch('/{stokPosko}', [StokPoskoController::class, 'update'])->name('update');
+        Route::delete('/{stokPosko}', [StokPoskoController::class, 'destroy'])->name('destroy');
+    });
 });

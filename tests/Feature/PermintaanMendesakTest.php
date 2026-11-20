@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\PermintaanMendesak;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -117,6 +118,8 @@ class PermintaanMendesakTest extends TestCase
 
     public function test_staff_index_lists_all_requests(): void
     {
+        $this->actingAs(User::factory()->create());
+
         $pertama = PermintaanMendesak::create($this->validData());
         $kedua = PermintaanMendesak::create($this->validData([
             'jenis_kebutuhan' => 'Selimut',
