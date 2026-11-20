@@ -11,6 +11,7 @@ use App\Http\Controllers\KategoriBencanaController;
 use App\Http\Controllers\LaporanKejadianController;
 use App\Http\Controllers\LaporanKejadianPublikController;
 use App\Http\Controllers\PengungsiController;
+use App\Http\Controllers\StokPoskoController;
 use App\Models\PermintaanMendesak;
 
 Route::get('/', function () {
@@ -85,11 +86,13 @@ Route::get('posko', [\App\Http\Controllers\PoskoPublikController::class, 'index'
 Route::resource('sumber-bantuan', SumberBantuanController::class)
     ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
     ->names('sumber-bantuan');
+
 // DAFIF-8
 Route::resource('kategori-bencana', KategoriBencanaController::class)
     ->except('show')
     ->parameters(['kategori-bencana' => 'kategori_bencana']);
-//DAFIF-9
+
+// DAFIF-9
 Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(function () {
     Route::get('/', [LaporanKejadianPublikController::class, 'create'])->name('create');
     Route::post('/', [LaporanKejadianPublikController::class, 'store'])->name('store');
@@ -107,3 +110,11 @@ Route::resource('relawan/pengungsi', PengungsiController::class)
     ->only(['index', 'store', 'update', 'destroy'])
     ->parameters(['pengungsi' => 'pengungsi'])
     ->names('pengungsi');
+
+// DAHIF-5
+Route::prefix('stok-logistik')->name('stok-posko.')->group(function () {
+    Route::get('/', [StokPoskoController::class, 'index'])->name('index');
+    Route::post('/', [StokPoskoController::class, 'store'])->name('store');
+    Route::patch('/{stokPosko}', [StokPoskoController::class, 'update'])->name('update');
+    Route::delete('/{stokPosko}', [StokPoskoController::class, 'destroy'])->name('destroy');
+});
