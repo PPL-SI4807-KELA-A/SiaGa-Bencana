@@ -13,13 +13,20 @@ class StokPoskoTest extends TestCase
 {
     use RefreshDatabase;
 
+    private int $nomorEmailTest = 0;
+
+    private function emailTest(string $prefix): string
+    {
+        return $prefix . (++$this->nomorEmailTest) . '@test.local';
+    }
+
     private function relawan(int $poskoId = 1, string $namaPosko = 'Posko Utama'): User
     {
         $user = new User();
         $user->name = "Relawan Posko {$poskoId}";
-        $user->email = "relawan{$poskoId}@test.local";
+        $user->email = $this->emailTest("relawan{$poskoId}");
         $user->password = bcrypt('password');
-        $user->role = 'relawan';
+        $user->role = 'Relawan Posko';
         $user->posko_id = $poskoId;
         $user->setRelation('posko', (object) ['id' => $poskoId, 'nama' => $namaPosko]);
         $user->save();
@@ -31,9 +38,9 @@ class StokPoskoTest extends TestCase
     {
         $user = new User();
         $user->name = 'Admin BPBD';
-        $user->email = 'admin@test.local';
+        $user->email = $this->emailTest('admin');
         $user->password = bcrypt('password');
-        $user->role = 'admin';
+        $user->role = 'Admin BPBD';
         $user->save();
 
         return $user;
