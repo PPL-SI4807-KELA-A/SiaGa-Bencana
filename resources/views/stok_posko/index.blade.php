@@ -1,19 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Stok Logistik Posko - SiaGa Bencana</title>
-    {{-- Sementara mandiri. Setelah layout Arkan masuk ke main, ganti dengan @extends. --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+@extends('layouts.app')
+@section('title', 'Stok Logistik Posko')
+@section('judul', 'Stok Logistik Posko')
+@section('subjudul', 'Pantau stok barang dan batas minimum per posko')
+@section('menu_aktif', 'stok')
+
+@section('content')
 <div class="container-fluid py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Stok Logistik Posko</h4>
         @if ($isRelawan)
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+            <button type="button" class="btn btn-sg" data-bs-toggle="modal" data-bs-target="#modalTambah">
                 + Tambah Barang ke Stok
             </button>
         @endif
@@ -202,14 +198,14 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="submit" class="btn btn-sg">Simpan</button>
             </div>
         </form>
     </div>
 </div>
 @endif
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@push('scripts')
 @if ($isRelawan && $errors->any() && old('_form') === 'tambah')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -220,5 +216,5 @@
         });
     </script>
 @endif
-</body>
-</html>
+@endpush
+@endsection
