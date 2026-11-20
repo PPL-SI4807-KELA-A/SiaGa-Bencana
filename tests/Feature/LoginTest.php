@@ -16,7 +16,7 @@ class LoginTest extends TestCase
 
         $this->actingAs(User::factory()->create())
             ->get(route('login'))
-            ->assertRedirect('/');
+            ->assertRedirect(route('dasbor'));
     }
 
     public function test_valid_credentials_authenticate_user(): void
@@ -30,7 +30,7 @@ class LoginTest extends TestCase
             'email' => 'admin@siagabencana.test',
             'password' => 'kata-sandi-uji',
             'remember' => true,
-        ])->assertRedirect('/');
+        ])->assertRedirect(route('dasbor'));
 
         $this->assertAuthenticatedAs($user);
     }
@@ -51,6 +51,22 @@ class LoginTest extends TestCase
             ->assertSessionHasErrors(['email' => 'Email atau kata sandi salah.']);
 
         $this->assertGuest();
+    }
+
+    public function test_public_posko_page_shows_the_appropriate_access_button(): void
+    {
+        $this->get(route('posko.publik'))
+            ->assertOk()
+            ->assertSee('Masuk')
+            ->assertSee('href="'.route('login').'"', false)
+            ->assertDontSee('href="'.route('dasbor').'"', false);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('posko.publik'))
+            ->assertOk()
+            ->assertSee('Dasbor')
+            ->assertSee('href="'.route('dasbor').'"', false)
+            ->assertDontSee('href="'.route('login').'"', false);
     }
 
     public function test_logout_ends_session_and_redirects_to_public_posko(): void

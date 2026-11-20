@@ -96,6 +96,9 @@
                 {{ $item['label'] }}
             </a>
         @endforeach
+        @auth
+            <a href="{{ route('dasbor') }}" class="btn btn-sg btn-sm">Dasbor</a>
+        @endauth
         @guest
             <a href="{{ route('login') }}" class="btn btn-sg btn-sm">Masuk</a>
         @endguest

@@ -14,6 +14,7 @@ class PembatasanPeranTest extends TestCase
     {
         $this->get(route('wilayah-terdampak.index'))->assertRedirect(route('login'));
         $this->get(route('posko.index'))->assertRedirect(route('login'));
+        $this->get(route('dasbor'))->assertRedirect(route('login'));
     }
 
     public function test_relawan_cannot_open_admin_routes(): void
@@ -32,6 +33,19 @@ class PembatasanPeranTest extends TestCase
 
         $this->get(route('wilayah-terdampak.index'))->assertOk();
         $this->get(route('posko.index'))->assertOk();
+    }
+
+    public function test_admin_and_relawan_can_open_dashboard(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('dasbor'))
+            ->assertOk()
+            ->assertViewIs('dashboard');
+
+        $this->actingAs(User::factory()->relawanPosko(1)->create())
+            ->get(route('dasbor'))
+            ->assertOk()
+            ->assertViewIs('dashboard');
     }
 
     public function test_public_posko_page_remains_accessible_without_login(): void

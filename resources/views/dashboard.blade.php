@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard - SiaGa Bencana')
+@section('menu_aktif', 'dasbor')
 
 @section('content')
     <!-- Notifikasi Sukses -->

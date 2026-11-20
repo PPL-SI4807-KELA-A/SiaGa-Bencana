@@ -175,7 +175,7 @@
     // Menu lain 'route' => null dulu, menunggu kabar nama route dari PIC masing-masing PBI.
     $menu = [
         'Utama' => [
-            ['key' => 'dasbor', 'label' => 'Dasbor', 'icon' => 'bi-grid-1x2', 'route' => null],
+            ['key' => 'dasbor', 'label' => 'Dasbor', 'icon' => 'bi-grid-1x2', 'route' => 'dasbor'],
         ],
         'Wilayah & Posko' => [
             ['key' => 'wilayah', 'label' => 'Wilayah Terdampak', 'icon' => 'bi-geo-alt', 'route' => 'wilayah-terdampak.index'],

@@ -10,9 +10,7 @@ use App\Http\Controllers\KategoriBencanaController;
 use App\Http\Controllers\LaporanKejadianController;
 use App\Http\Controllers\LaporanKejadianPublikController;
 
-Route::get('/', function () {
-    return view('dashboard');
-});
+Route::redirect('/', '/posko');
 
 // CHORE Login
 Route::middleware('guest')->group(function () {
@@ -24,6 +22,9 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+Route::get('/dasbor', fn () => view('dashboard'))
+    ->middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])
+    ->name('dasbor');
 
 // DAHIF-1
 Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
