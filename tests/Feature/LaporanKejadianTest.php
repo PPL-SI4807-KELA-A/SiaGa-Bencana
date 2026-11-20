@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\KategoriBencana;
 use App\Models\LaporanKejadian;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,13 @@ use Tests\TestCase;
 class LaporanKejadianTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     private function kategori(bool $aktif = true): KategoriBencana
     {

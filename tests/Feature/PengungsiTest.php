@@ -3,12 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\Pengungsi;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PengungsiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     public function test_index_menampilkan_daftar_dan_sisa_kapasitas(): void
     {

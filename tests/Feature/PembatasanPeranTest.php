@@ -15,6 +15,14 @@ class PembatasanPeranTest extends TestCase
         $this->get(route('wilayah-terdampak.index'))->assertRedirect(route('login'));
         $this->get(route('posko.index'))->assertRedirect(route('login'));
         $this->get(route('dasbor'))->assertRedirect(route('login'));
+        $this->get(route('barang.index'))->assertRedirect(route('login'));
+        $this->get(route('sumber-bantuan.index'))->assertRedirect(route('login'));
+        $this->get(route('kategori-bencana.index'))->assertRedirect(route('login'));
+        $this->get(route('laporan-kejadian.index'))->assertRedirect(route('login'));
+        $this->get(route('laporan-kejadian.show', 1))->assertRedirect(route('login'));
+        $this->get(route('admin.permintaan-mendesak.index'))->assertRedirect(route('login'));
+        $this->get(route('pengungsi.index'))->assertRedirect(route('login'));
+        $this->get(route('stok-posko.index'))->assertRedirect(route('login'));
     }
 
     public function test_relawan_cannot_open_admin_routes(): void
@@ -51,6 +59,8 @@ class PembatasanPeranTest extends TestCase
     public function test_public_posko_page_remains_accessible_without_login(): void
     {
         $this->get(route('posko.publik'))->assertOk();
+        $this->get(route('laporan-kejadian.publik.create'))->assertOk();
+        $this->get(route('permintaan-mendesak.create'))->assertOk();
         $this->assertGuest();
     }
 }
