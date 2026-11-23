@@ -1,6 +1,6 @@
 # Panduan Kontribusi SiaGa Bencana
 
-Aturan kerja Git untuk Kelompok PPL-SI4807-KELA-A. Repo ini private di organisasi paket Free, jadi proteksi branch **tidak dipaksa oleh GitHub**. Aturan di bawah adalah kesepakatan tim dan wajib diikuti semua anggota.
+Aturan kerja Git untuk Kelompok PPL-SI4807-KELA-A. Sejak 23 November 2026 repo ini public, dan branch `main` serta `production` dilindungi ruleset GitHub `proteksi-main-production`. Sebagian aturan di bawah ditegakkan otomatis oleh GitHub, sisanya adalah kesepakatan tim yang wajib diikuti semua anggota.
 
 ## Branch
 
@@ -14,7 +14,15 @@ Aturan kerja Git untuk Kelompok PPL-SI4807-KELA-A. Repo ini private di organisas
 <nama-anggota>  ──PR──▶  main  ──(akhir Sprint)──▶  production  ──▶  hosting
 ```
 
-**Dilarang push langsung ke `main` dan `production`.** Semua perubahan lewat Pull Request dari branch anggota. Karena GitHub tidak memblokir push langsung di repo ini, pelanggaran tidak ditolak otomatis: commit langsung ke `main` melewati `Laravel tests` dan validasi judul, sehingga bug bisa masuk tanpa diperiksa. Di Sprint 1 hal ini pernah terjadi (DAHIF-5, commit `3eee375`) dan harus diperbaiki lewat PR susulan. Sebelum menjalankan `git push`, pastikan nama branch di terminal adalah branch sendiri, bukan `main`.
+**Dilarang push langsung ke `main` dan `production`.** Semua perubahan lewat Pull Request dari branch anggota. Aturan ini ditegakkan oleh ruleset `proteksi-main-production`:
+
+- Push langsung ke `main` dan `production` **ditolak** oleh GitHub. Perubahan hanya bisa masuk lewat PR.
+- PR hanya bisa di-merge jika check `Laravel tests` dan `Validate PR title and commits` lolos.
+- Metode merge yang diizinkan hanya **Create a merge commit**; Squash dan Rebase dinonaktifkan.
+- Force push dan penghapusan branch `main` serta `production` diblokir.
+- Tidak perlu approval dari anggota lain (required approvals 0); pemilik PR tetap merge sendiri.
+
+Sebelum ruleset aktif, push langsung pernah terjadi di Sprint 1 (DAHIF-5, commit `3eee375`) dan harus diperbaiki lewat PR susulan. Jika `git push` ditolak dengan pesan seperti `push declined due to repository rule violations`, berarti kamu sedang berada di `main`. Pindahkan pekerjaan ke branch sendiri, lalu buat PR.
 
 Setiap anggota hanya bekerja di branch miliknya sendiri. Branch anggota **tidak dihapus** setelah merge, dan dipakai terus sampai Sprint 2 selesai.
 
