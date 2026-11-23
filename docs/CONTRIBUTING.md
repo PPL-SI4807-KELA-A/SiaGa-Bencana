@@ -1,6 +1,6 @@
 # Panduan Kontribusi SiaGa Bencana
 
-Aturan kerja Git untuk Kelompok PPL-SI4807-KELA-A. Repo ini private di organisasi paket Free, jadi proteksi branch **tidak dipaksa oleh GitHub**. Aturan di bawah adalah kesepakatan tim dan wajib diikuti semua anggota.
+Aturan kerja Git untuk Kelompok PPL-SI4807-KELA-A. Sejak 23 November 2026 repo ini public, dan branch `main` serta `production` dilindungi ruleset GitHub `proteksi-main-production`. Sebagian aturan di bawah ditegakkan otomatis oleh GitHub, sisanya adalah kesepakatan tim yang wajib diikuti semua anggota.
 
 ## Branch
 
@@ -14,7 +14,15 @@ Aturan kerja Git untuk Kelompok PPL-SI4807-KELA-A. Repo ini private di organisas
 <nama-anggota>  ──PR──▶  main  ──(akhir Sprint)──▶  production  ──▶  hosting
 ```
 
-**Dilarang push langsung ke `main` dan `production`.** Semua perubahan lewat Pull Request dari branch anggota.
+**Dilarang push langsung ke `main` dan `production`.** Semua perubahan lewat Pull Request dari branch anggota. Aturan ini ditegakkan oleh ruleset `proteksi-main-production`:
+
+- Push langsung ke `main` dan `production` **ditolak** oleh GitHub. Perubahan hanya bisa masuk lewat PR.
+- PR hanya bisa di-merge jika check `Laravel tests` dan `Validate PR title and commits` lolos.
+- Metode merge yang diizinkan hanya **Create a merge commit**; Squash dan Rebase dinonaktifkan.
+- Force push dan penghapusan branch `main` serta `production` diblokir.
+- Tidak perlu approval dari anggota lain (required approvals 0); pemilik PR tetap merge sendiri.
+
+Sebelum ruleset aktif, push langsung pernah terjadi di Sprint 1 (DAHIF-5, commit `3eee375`) dan harus diperbaiki lewat PR susulan. Jika `git push` ditolak dengan pesan seperti `push declined due to repository rule violations`, berarti kamu sedang berada di `main`. Pindahkan pekerjaan ke branch sendiri, lalu buat PR.
 
 Setiap anggota hanya bekerja di branch miliknya sendiri. Branch anggota **tidak dihapus** setelah merge, dan dipakai terus sampai Sprint 2 selesai.
 
@@ -43,7 +51,8 @@ Ganti `amrin` dengan nama masing-masing.
 git checkout amrin
 
 # 2. Ambil perubahan terbaru dari main
-git pull origin main
+git pull --no-edit origin main
+php artisan migrate
 
 # 3. Kerjakan PBI, lalu commit dengan kode dan nama Jira di awal pesan
 git add .
@@ -53,7 +62,27 @@ git commit -m "DAHIF-3 Kelola Data Pengungsi: tambah form pengungsi"
 git push origin amrin
 ```
 
-Karena branch anggota dipakai lama, **wajib menjalankan `git pull origin main` setiap mulai kerja**. Tanpa ini, branch tertinggal jauh dari `main` dan konfliknya menumpuk.
+Karena branch anggota dipakai lama, **wajib menjalankan `git pull --no-edit origin main` setiap mulai kerja**. Tanpa ini, branch tertinggal jauh dari `main` dan konfliknya menumpuk. Opsi `--no-edit` membuat Git langsung memakai pesan merge bawaan tanpa membuka editor.
+
+## Login, peran, dan layout
+
+Sejak PR `CHORE: Login dan Dashboard Monitoring`, aplikasi memakai login untuk petugas. Ikuti ketentuan berikut saat membuat atau mengubah halaman PBI.
+
+- **Akun petugas** dibuat dengan `php artisan db:seed --class=PetugasSeeder` (kata sandi `password`, hanya untuk lokal): `admin@siagabencana.test` (Admin BPBD), `relawan.bojongsoang@siagabencana.test` (Relawan Posko, posko 1), dan `relawan.dayeuhkolot@siagabencana.test` (Relawan Posko, posko 2). Tidak ada fitur register.
+- **Alur masuk:** `/` diarahkan ke Posko Aktif (`/posko`) untuk warga, petugas yang login diarahkan ke `/dasbor`, dan Keluar kembali ke `/posko`.
+- **Route petugas** dibungkus middleware di blok komentar PBI sendiri pada `routes/web.php`, misalnya `Route::middleware(['auth', 'peran:Admin BPBD'])->group(...)`. Gunakan `peran:Relawan Posko` atau `peran:Admin BPBD,Relawan Posko` sesuai aktor PBI. Halaman Warga/Pelapor tidak dibungkus.
+- **Data per posko:** posko milik relawan dibaca dari `auth()->user()->posko_id`. Jangan memakai ID posko tetap (misalnya konstanta `POSKO_DUMMY_ID = 1`).
+- **Test** untuk halaman petugas harus login terlebih dahulu dengan `$this->actingAs(User::factory()->create())` (Admin BPBD) atau `User::factory()->relawanPosko(1)->create()` (Relawan Posko).
+- **Layout:** halaman petugas wajib memakai `@extends('layouts.app')` dengan `@section('title')`, `@section('judul')`, dan `@section('menu_aktif')`. Halaman warga wajib memakai `@extends('layouts.guest')`. Jangan membuat halaman HTML mandiri (`<!DOCTYPE html>` sendiri), karena halaman itu kehilangan sidebar dan tombol Keluar.
+
+## Pengujian sebelum PR
+
+`php artisan test` memakai SQLite in-memory dan mengirim data langsung ke route, sehingga tidak menangkap form yang rusak, layout yang salah, atau masalah migration di MySQL. Di Sprint 1, form Lapor Kejadian lolos semua test tetapi tidak bisa dikirim di browser. Karena itu, sebelum membuat PR:
+
+1. Jalankan `php artisan test` sampai semua lolos.
+2. Jalankan `php artisan migrate` di MySQL lokal dan pastikan tidak ada error.
+3. Buka fitur di browser dengan peran yang sesuai: tambah, ubah, hapus, validasi gagal, dan pesan sukses. Untuk halaman warga, uji dalam keadaan belum login.
+4. Tulis di deskripsi PR peran apa yang dipakai dan langkah apa yang sudah diuji.
 
 ## Pull Request dan merge
 
@@ -81,13 +110,21 @@ Karena branch anggota dipakai lama, **wajib menjalankan `git pull origin main` s
 - Sebelum merge, pastikan branch sudah memuat `main` terbaru, tidak ada konflik, dan aplikasi masih bisa dijalankan (`php artisan serve`).
 - Setelah merge, **jangan hapus branch**. Lanjutkan PBI berikutnya di branch yang sama.
 
+## Batas merge dan pembekuan main
+
+Semua PBI dalam satu Sprint wajib sudah di-merge ke `main` paling lambat **hari Jumat sebelum Sprint Review pukul 18.00 WIB** (Sprint 2: Jumat, 25 Desember 2026), karena hari Sabtu hanya dipakai untuk Sprint Review dan Retrospective. Setelah batas itu, `main` dibekukan untuk pengujian integrasi oleh Dhafa:
+
+- Anggota tidak merge PR apa pun ke `main` sampai Dhafa mengumumkan bahwa `main` sudah dibuka lagi.
+- Bug yang ditemukan saat integrasi diperbaiki oleh PIC PBI tersebut. Jika PIC tidak bisa dihubungi sebelum rilis, Dhafa boleh memperbaikinya lewat PR `CHORE: Login dan Dashboard Monitoring` **setelah mendapat izin PIC**, dan perubahannya dicatat di deskripsi PR. Perbaikan dibatasi pada hal yang menghalangi demo; sisanya dicatat untuk Sprint berikutnya.
+- Bug yang ditemukan anggota saat menguji `main` jangan langsung diperbaiki dan di-push. Laporkan dulu ke grup dengan langkah dan screenshot.
+
 ## Rilis ke production
 
 Di akhir setiap Sprint (setelah pekan pengujian dan integrasi), Dhafa membuat PR dari `main` ke `production`, lalu merge:
 
 - Judul PR rilis wajib menggunakan format `Release Sprint <nomor>`, misalnya `Release Sprint 1`.
 
-- Sprint 1: 21 November 2026
+- Sprint 1: 21 November 2026 (sudah dirilis lewat PR #27)
 - Sprint 2: 26 Desember 2026
 
 Server hosting kemudian mengambil versi terbaru dari `production`:
@@ -107,7 +144,8 @@ Jangan mengembangkan fitur langsung di `production`. Kalau ada bug di produksi, 
 - **Setiap PBI harus dapat dikembangkan dan diuji secara mandiri.** Jangan menunggu PBI anggota lain selesai untuk mulai coding atau menguji fitur sendiri.
 - **Data dummy dibuat dan dikelola sendiri oleh PIC PBI.** Setiap PBI harus dapat dimigrasikan, dijalankan, dan diuji tanpa migration, tabel, atau data dari PBI lain. Jangan membuat relasi database wajib yang membuat satu PBI tidak bisa berjalan tanpa PBI lain.
 - **PIC PBI membuat migration baru di branch miliknya untuk tabel dalam scope PBI tersebut.** Migration hanya mengelola tabel PBI sendiri dan harus dapat dijalankan tanpa migration PBI lain. Jangan mengubah migration yang sudah di-merge atau tabel milik PBI lain. Ibnu dapat membantu menjaga konsistensi rancangan skema, tetapi bukan prasyarat atau antrean persetujuan untuk mulai mengerjakan PBI.
-- **Seeder dibuat dalam file terpisah untuk setiap PBI**, misalnya `PengungsiSeeder`. Hindari mengedit `DatabaseSeeder.php` secara bersamaan. Pendaftaran seeder ke `DatabaseSeeder.php` dikoordinasikan dengan tim agar tidak terjadi konflik; untuk kebutuhan lokal, jalankan seeder PBI secara langsung.
+- **Data dummy untuk demo diisi lewat phpMyAdmin**, memakai file SQL bersama (misalnya `data_demo_sprint1.sql`) yang dibagikan Dhafa, agar semua anggota menguji dengan data yang sama. Seeder baru hanya dibuat untuk kebutuhan yang tidak bisa diisi lewat SQL, seperti akun petugas di `PetugasSeeder`. Seeder PBI yang sudah ada tetap boleh dipakai untuk lokal, dijalankan langsung dengan `php artisan db:seed --class=NamaSeeder`. Hindari mengedit `DatabaseSeeder.php`.
+- **Nama tabel stok di kode adalah `stok_poskos`**, berbeda dengan rancangan proposal (`stok_posko`). Gunakan nama yang ada di kode; penyeragaman, jika diputuskan, dilakukan lewat migration baru, bukan dengan mengubah migration lama.
 - **Jangan push file `.env`.** Bagikan konfigurasi lewat `.env.example`.
 - **Satu PBI hanya mengubah tabel yang menjadi tanggung jawabnya**, sesuai pembagian PBI. Jangan mengubah tabel atau migration milik PBI lain. Jangan membuat foreign key atau ketergantungan skema wajib antar-PBI; siapkan data dummy lokal agar PBI tetap dapat diuji sendiri.
 - **StokService** (PBI-05, 15, 16) hanya diubah oleh Ibnu.
@@ -116,7 +154,8 @@ Jangan mengembangkan fitur langsung di `production`. Kalau ada bug di produksi, 
 - `app/Services/StokService.php` hanya boleh diubah dari branch `ibnu`.
 - File `.env` dan file environment lain yang berisi konfigurasi lokal tidak boleh diubah atau di-commit. `.env.example` boleh diperbarui jika diperlukan.
 - File `.github/workflows/` hanya boleh diubah dari branch `dhafa` agar aturan Action tidak berubah sembarangan.
-- **Penggunaan AI wajib mengikuti [Aturan Penggunaan AI](ATURAN_PENGGUNAAN_AI.md).** Sebelum mengirim prompt pekerjaan, anggota wajib memberikan `CONTRIBUTING.md` dan `ATURAN_PENGGUNAAN_AI.md` kepada AI, lalu meminta AI mengonfirmasi bahwa kedua dokumen sudah dibaca dan dipahami.
+- **Penggunaan AI wajib mengikuti [Aturan Penggunaan AI](ATURAN_PENGGUNAAN_AI.md).** Sebelum mengirim prompt pekerjaan, anggota wajib memberikan `CONTRIBUTING.md` dan `ATURAN_PENGGUNAAN_AI.md` kepada AI, lalu meminta AI mengonfirmasi bahwa kedua dokumen sudah dibaca dan dipahami. Pesan commit dan judul PR tetap diketik sendiri sesuai format, bukan memakai pesan buatan AI seperti `feat: ...`.
+- **Akun GitHub wajib memakai autentikasi dua faktor (2FA)** paling lambat 24 November 2026. Tanpa 2FA, akses ke organisasi bisa dibatasi oleh GitHub.
 
 ## Pembagian PBI
 
@@ -126,5 +165,5 @@ Jangan mengembangkan fitur langsung di `production`. Kalau ada bug di produksi, 
 | Amrin | `amrin` | DAHIF-3 | DAHIF-11, DAHIF-12 |
 | Arkan | `arkan` | DAHIF-4 | DAHIF-13, DAHIF-14 |
 | Ibnu | `ibnu` | DAHIF-5 | DAHIF-15, DAHIF-16 |
-| Achmad | `achmad` | DAHIF-6, DAHIF-7 | DAHIF-17 |
+| Achmad (Atsir) | `achmad` | DAHIF-6, DAHIF-7 | DAHIF-17 |
 | Fiqih | `fiqih` | DAHIF-8, DAHIF-9 | DAHIF-18 |
