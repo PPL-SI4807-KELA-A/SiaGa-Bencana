@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Detail Laporan Kejadian')
 @section('judul', 'Detail Laporan Kejadian')
 @section('subjudul', $laporan->kode_pelacakan)
 @section('menu_aktif', 'kejadian')
@@ -25,8 +26,10 @@
         <dt class="col-sm-3">Lokasi</dt>
         <dd class="col-sm-9">{{ $laporan->lokasi }}</dd>
 
-        <dt class="col-sm-3">Ketinggian air</dt>
-        <dd class="col-sm-9">{{ $laporan->ketinggian_air ?? '-' }}</dd>
+        @if($laporan->kategori?->isBanjir())
+            <dt class="col-sm-3">Ketinggian air</dt>
+            <dd class="col-sm-9">{{ $laporan->ketinggian_air ?? '-' }}</dd>
+        @endif
 
         <dt class="col-sm-3">Deskripsi</dt>
         <dd class="col-sm-9">{{ $laporan->deskripsi }}</dd>

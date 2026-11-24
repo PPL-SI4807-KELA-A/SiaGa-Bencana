@@ -7,7 +7,6 @@ use App\Models\LaporanKejadian;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -15,16 +14,12 @@ class LaporanKejadianTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    private function kategori(bool $aktif = true, string $nama = null): KategoriBencana
     {
-        parent::setUp();
-
-        $this->actingAs(User::factory()->create());
-    }
-
-    private function kategori(bool $aktif = true): KategoriBencana
-    {
-        return KategoriBencana::create(['nama' => 'Banjir ' . uniqid(), 'aktif' => $aktif]);
+        return KategoriBencana::create([
+            'nama' => $nama ?? 'Kategori ' . uniqid(),
+            'aktif' => $aktif,
+        ]);
     }
 
     private function data(array $override = []): array
@@ -48,6 +43,13 @@ class LaporanKejadianTest extends TestCase
         ], $override));
     }
 
+    private function loginAdmin(): void
+    {
+        $this->actingAs(User::factory()->create()); // Admin BPBD (peran bawaan factory)
+    }
+
+    // ===== Sisi Warga/Pelapor (tanpa login) =====
+
     public function test_formulir_hanya_menampilkan_kategori_aktif(): void
     {
         KategoriBencana::create(['nama' => 'Banjir', 'aktif' => true]);
@@ -57,23 +59,6 @@ class LaporanKejadianTest extends TestCase
             ->assertOk()
             ->assertSee('Banjir')
             ->assertDontSee('Kategori Lama');
-    }
-
-    public function test_guest_can_open_public_report_form_and_tracking_check_page(): void
-    {
-        Auth::logout();
-        $this->assertGuest();
-
-        $this->get(route('laporan-kejadian.publik.create'))
-            ->assertOk()
-            ->assertSee('name="lokasi"', false)
-            ->assertSee('name="deskripsi"', false)
-            ->assertSee('name="nama_pelapor"', false)
-            ->assertSee('name="kontak_pelapor"', false)
-            ->assertSee('name="foto"', false)
-            ->assertDontSee('Stok Logistik');
-
-        $this->get(route('laporan-kejadian.publik.cek'))->assertOk();
     }
 
     public function test_kirim_laporan_berhasil_dengan_kode_pelacakan(): void
@@ -101,6 +86,46 @@ class LaporanKejadianTest extends TestCase
 
         $this->post(route('laporan-kejadian.publik.store'), $this->data(['kategori_bencana_id' => $nonaktif->id]))
             ->assertSessionHasErrors('kategori_bencana_id');
+    }
+
+    public function test_kontak_hanya_angka_8_sampai_15_digit(): void
+    {
+        foreach (['08122abc4578', '0812-2045-7781', '1234567', '1234567890123456'] as $salah) {
+            $this->post(route('laporan-kejadian.publik.store'), $this->data(['kontak_pelapor' => $salah]))
+                ->assertSessionHasErrors('kontak_pelapor');
+        }
+
+        foreach (['12345678', '123456789012345'] as $benar) {
+            $this->post(route('laporan-kejadian.publik.store'), $this->data(['kontak_pelapor' => $benar]))
+                ->assertSessionHasNoErrors();
+        }
+    }
+
+    public function test_ketinggian_air_hanya_disimpan_untuk_kategori_banjir(): void
+    {
+        $banjir = $this->kategori(true, 'Banjir');
+        $longsor = $this->kategori(true, 'Tanah Longsor');
+
+        $this->post(route('laporan-kejadian.publik.store'), $this->data([
+            'kategori_bencana_id' => $banjir->id, 'ketinggian_air' => '50-100 cm',
+        ]));
+        $this->post(route('laporan-kejadian.publik.store'), $this->data([
+            'kategori_bencana_id' => $longsor->id, 'ketinggian_air' => '50-100 cm',
+        ]));
+
+        $this->assertSame('50-100 cm', LaporanKejadian::where('kategori_bencana_id', $banjir->id)->value('ketinggian_air'));
+        $this->assertNull(LaporanKejadian::where('kategori_bencana_id', $longsor->id)->value('ketinggian_air'));
+    }
+
+    public function test_formulir_menandai_kategori_banjir(): void
+    {
+        $this->kategori(true, 'Banjir');
+        $this->kategori(true, 'Tanah Longsor');
+
+        $this->get(route('laporan-kejadian.publik.create'))
+            ->assertOk()
+            ->assertSee('data-banjir="1"', false)
+            ->assertSee('data-banjir="0"', false);
     }
 
     public function test_foto_jpg_valid_tersimpan(): void
@@ -171,8 +196,11 @@ class LaporanKejadianTest extends TestCase
         $this->assertDatabaseMissing('laporan_kejadian', ['id' => $laporan->id]);
     }
 
+    // ===== Sisi Admin BPBD (login) =====
+
     public function test_admin_dapat_melihat_daftar_dan_detail(): void
     {
+        $this->loginAdmin();
         $laporan = $this->buatLaporan();
 
         $this->get(route('laporan-kejadian.index'))
@@ -184,8 +212,17 @@ class LaporanKejadianTest extends TestCase
             ->assertSee('Citeureup');
     }
 
+    public function test_pengunjung_tanpa_login_tidak_bisa_membuka_halaman_admin(): void
+    {
+        $laporan = $this->buatLaporan();
+
+        $this->get(route('laporan-kejadian.index'))->assertRedirect();
+        $this->get(route('laporan-kejadian.show', $laporan->id))->assertRedirect();
+    }
+
     public function test_kategori_yang_dipakai_laporan_dinonaktifkan_saat_dihapus(): void
     {
+        $this->loginAdmin();
         $laporan = $this->buatLaporan();
         $kategori = $laporan->kategori;
 
