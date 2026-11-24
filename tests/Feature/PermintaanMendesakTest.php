@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\PermintaanMendesak;
+use App\Models\Posko;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -39,6 +40,45 @@ class PermintaanMendesakTest extends TestCase
         $this->post(route('permintaan-mendesak.store'), $this->validData([
             'nomor_kontak' => '0812-3456-7890',
         ]))->assertSessionHasErrors('nomor_kontak');
+    }
+
+    public function test_create_form_lists_active_posko_in_name_order_and_omits_inactive_posko_without_login(): void
+    {
+        $poskoZ = $this->buatPosko('Posko Zeta');
+        $this->buatPosko('Posko Nonaktif', false);
+        $poskoA = $this->buatPosko('Posko Alpha');
+
+        $this->get(route('permintaan-mendesak.create'))
+            ->assertOk()
+            ->assertSee('Tidak memilih posko')
+            ->assertSeeInOrder([$poskoA->nama_posko, $poskoZ->nama_posko])
+            ->assertDontSee('Posko Nonaktif');
+    }
+
+    public function test_edit_form_keeps_existing_inactive_posko_available(): void
+    {
+        $this->buatPosko('Posko Lama', false);
+        $poskoAktif = $this->buatPosko('Posko Aktif');
+        $permintaan = PermintaanMendesak::create($this->validData(['posko' => 'Posko Lama']));
+
+        $this->get(route('permintaan-mendesak.edit', $permintaan))
+            ->assertOk()
+            ->assertSee($poskoAktif->nama_posko)
+            ->assertSee('value="Posko Lama" selected', false);
+    }
+
+    public function test_inactive_or_unknown_posko_is_rejected_for_new_request(): void
+    {
+        $this->buatPosko('Posko Nonaktif', false);
+        $this->buatPosko('Posko Aktif');
+
+        $this->from(route('permintaan-mendesak.create'))
+            ->post(route('permintaan-mendesak.store'), $this->validData(['posko' => 'Posko Nonaktif']))
+            ->assertRedirect(route('permintaan-mendesak.create'))
+            ->assertSessionHasErrors('posko');
+
+        $this->post(route('permintaan-mendesak.store'), $this->validData(['posko' => 'Posko Tidak Terdaftar']))
+            ->assertSessionHasErrors('posko');
     }
 
     public function test_tracking_form_redirects_for_valid_code_and_rejects_invalid_code(): void
@@ -82,6 +122,25 @@ class PermintaanMendesakTest extends TestCase
             'kode_pelacakan' => $permintaan->kode_pelacakan,
             'jenis_kebutuhan' => 'Air minum',
             'perkiraan_jumlah' => 25,
+        ]);
+    }
+
+    public function test_existing_inactive_posko_can_be_kept_during_update(): void
+    {
+        $this->buatPosko('Posko Lama', false);
+        $permintaan = PermintaanMendesak::create($this->validData(['posko' => 'Posko Lama']));
+
+        $this->put(route('permintaan-mendesak.update', $permintaan), $this->validData([
+            'jenis_kebutuhan' => 'Air minum',
+            'posko' => 'Posko Lama',
+        ]))
+            ->assertRedirect(route('permintaan-mendesak.show', $permintaan))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('permintaan_mendesak', [
+            'kode_pelacakan' => $permintaan->kode_pelacakan,
+            'posko' => 'Posko Lama',
+            'jenis_kebutuhan' => 'Air minum',
         ]);
     }
 
@@ -143,5 +202,26 @@ class PermintaanMendesakTest extends TestCase
             'nomor_kontak' => '+628123456789',
             'posko' => null,
         ], $overrides);
+    }
+
+    private function buatPosko(string $nama, bool $aktif = true): Posko
+    {
+        $posko = Posko::create([
+            'nama_posko' => $nama,
+            'alamat' => 'Jalan Uji No. 1',
+            'desa_kelurahan' => 'Bojongsoang',
+            'kecamatan' => 'Bojongsoang',
+            'penanggung_jawab' => 'Petugas Uji',
+            'kontak_penanggung_jawab' => '081234567890',
+            'kapasitas' => 50,
+            'jumlah_terisi' => 10,
+        ]);
+
+        if (! $aktif) {
+            $posko->is_aktif = false;
+            $posko->save();
+        }
+
+        return $posko->refresh();
     }
 }

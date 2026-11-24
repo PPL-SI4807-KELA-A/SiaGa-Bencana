@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PermintaanMendesakRequest;
 use App\Models\PermintaanMendesak;
+use App\Models\Posko;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,7 +23,7 @@ class PermintaanMendesakController extends Controller
     public function create(): View
     {
         return view('permintaan_mendesak.create', [
-            'daftarPosko' => PermintaanMendesak::DAFTAR_POSKO,
+            'daftarPosko' => $this->daftarPoskoAktif(),
         ]);
     }
 
@@ -76,7 +77,7 @@ class PermintaanMendesakController extends Controller
 
         return view('permintaan_mendesak.edit', [
             'permintaan' => $kode_pelacakan,
-            'daftarPosko' => PermintaanMendesak::DAFTAR_POSKO,
+            'daftarPosko' => $this->daftarPoskoAktif($kode_pelacakan),
         ]);
     }
 
@@ -100,5 +101,20 @@ class PermintaanMendesakController extends Controller
         return redirect()
             ->route('permintaan-mendesak.lacak')
             ->with('success', 'Permintaan berhasil dibatalkan.');
+    }
+
+    private function daftarPoskoAktif(?PermintaanMendesak $permintaan = null)
+    {
+        $daftarPosko = Posko::query()
+            ->where('is_aktif', true)
+            ->orderBy('nama_posko')
+            ->pluck('nama_posko');
+
+        if ($permintaan?->posko !== null && ! $daftarPosko->containsStrict($permintaan->posko)) {
+            // Pertahankan pilihan lama yang nonaktif saat edit; request hanya akan menerima nilai lama ini.
+            $daftarPosko->push($permintaan->posko);
+        }
+
+        return $daftarPosko;
     }
 }

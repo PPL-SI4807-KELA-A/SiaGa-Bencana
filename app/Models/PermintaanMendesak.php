@@ -9,12 +9,6 @@ class PermintaanMendesak extends Model
 {
     public const STATUS_DIAJUKAN = 'Diajukan';
 
-    public const DAFTAR_POSKO = [
-        'Posko Dayeuhkolot',
-        'Posko Lembang',
-        'Posko Rancaekek',
-    ];
-
     protected $table = 'permintaan_mendesak';
 
     protected $fillable = [
