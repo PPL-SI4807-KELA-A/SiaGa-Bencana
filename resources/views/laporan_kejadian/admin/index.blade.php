@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Laporan Kejadian')
 @section('judul', 'Laporan Kejadian')
 @section('subjudul', 'Laporan bencana yang dikirim Warga/Pelapor')
 @section('menu_aktif', 'kejadian')
