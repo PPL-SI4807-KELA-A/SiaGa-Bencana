@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Tambah Kategori Bencana')
 @section('judul', 'Tambah Kategori Bencana')
 @section('menu_aktif', 'kategori')
 

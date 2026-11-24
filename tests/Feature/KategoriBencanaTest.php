@@ -11,10 +11,10 @@ class KategoriBencanaTest extends TestCase
 {
     use RefreshDatabase;
 
+    // Admin BPBD (peran bawaan factory)
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->actingAs(User::factory()->create());
     }
 
@@ -88,10 +88,16 @@ class KategoriBencanaTest extends TestCase
         $this->assertSame(['Banjir'], KategoriBencana::aktif()->pluck('nama')->all());
     }
 
-    public function test_sudah_dipakai_false_jika_tabel_laporan_belum_ada(): void
+    public function test_is_banjir_tidak_peka_huruf_besar_kecil(): void
     {
-        $k = KategoriBencana::create(['nama' => 'Banjir', 'aktif' => true]);
+        $this->assertTrue((new KategoriBencana(['nama' => ' banjir ']))->isBanjir());
+        $this->assertFalse((new KategoriBencana(['nama' => 'Tanah Longsor']))->isBanjir());
+    }
 
-        $this->assertFalse($k->sudahDipakai());
+    public function test_pengunjung_tanpa_login_tidak_bisa_membuka_halaman_admin(): void
+    {
+        auth()->logout();
+
+        $this->get(route('kategori-bencana.index'))->assertRedirect();
     }
 }

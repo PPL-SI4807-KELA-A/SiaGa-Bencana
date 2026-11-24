@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'Kategori Bencana')
 @section('judul', 'Kategori Bencana')
 @section('subjudul', 'Jenis bencana yang dipakai pada formulir laporan kejadian')
 @section('menu_aktif', 'kategori')
