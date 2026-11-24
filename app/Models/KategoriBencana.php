@@ -19,6 +19,11 @@ class KategoriBencana extends Model
         return $query->where('aktif', true);
     }
 
+    public function isBanjir(): bool
+    {
+        return strcasecmp(trim($this->nama), 'Banjir') === 0;
+    }
+
     public function sudahDipakai(): bool
     {
         return Schema::hasTable('laporan_kejadian')
