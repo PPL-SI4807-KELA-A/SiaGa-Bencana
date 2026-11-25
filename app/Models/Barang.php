@@ -16,10 +16,9 @@ class Barang extends Model
         'kebersihan',
     ];
 
-    private const TABEL_STOK = 'stok_posko';
+    private const TABEL_STOK = 'stok_poskos';
 
-    // Nama kolom penghubung menunggu konfirmasi PIC PBI-05. Jangan menebak namanya.
-    private const KOLOM_PENGHUBUNG_STOK = null;
+    private const KOLOM_PENGHUBUNG_STOK = 'barang_id';
 
     protected $table = 'barang';
 
@@ -44,7 +43,6 @@ class Barang extends Model
 
     /**
      * Periksa pemakaian barang tanpa membuat foreign key ke tabel stok PBI lain.
-     * Nilai kolom penghubung sengaja belum ditetapkan sampai dikonfirmasi PIC PBI-05.
      */
     public function sudahDipakai(): bool
     {

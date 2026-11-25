@@ -43,7 +43,7 @@
                             <tr>
                                 <td>{{ $barangs->firstItem() + $loop->index }}</td>
                                 <td class="fw-semibold">{{ $barang->nama }}</td>
-                                <td>{{ $barang->kategori }}</td>
+                                <td>{{ ucfirst($barang->kategori) }}</td>
                                 <td>{{ $barang->satuan }}</td>
                                 <td>
                                     <span class="badge {{ $barang->aktif ? 'bg-success' : 'bg-secondary' }}">

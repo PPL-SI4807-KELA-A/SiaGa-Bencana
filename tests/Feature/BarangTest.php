@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Barang;
+use App\Models\StokPosko;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -35,6 +36,20 @@ class BarangTest extends TestCase
             ->assertSee('Aktif')
             ->assertSee('Nonaktif')
             ->assertSee('pcs');
+    }
+
+    public function test_index_displays_category_with_initial_capital_without_changing_saved_value(): void
+    {
+        $barang = Barang::create($this->validData(['kategori' => 'obat-obatan']));
+
+        $this->get(route('barang.index'))
+            ->assertOk()
+            ->assertSee('<td>Obat-obatan</td>', false);
+
+        $this->assertDatabaseHas('barang', [
+            'id' => $barang->id,
+            'kategori' => 'obat-obatan',
+        ]);
     }
 
     public function test_create_and_edit_pages_are_available(): void
@@ -124,7 +139,7 @@ class BarangTest extends TestCase
             ->assertSessionHasErrors('nama');
     }
 
-    public function test_destroy_deletes_barang_when_stock_table_is_unavailable(): void
+    public function test_destroy_deletes_barang_when_it_is_not_present_in_stock(): void
     {
         $barang = Barang::create($this->validData());
 
@@ -133,6 +148,37 @@ class BarangTest extends TestCase
             ->assertSessionHas('success', 'Data barang berhasil dihapus.');
 
         $this->assertDatabaseMissing('barang', ['id' => $barang->id]);
+    }
+
+    public function test_destroy_deactivates_barang_that_is_present_in_stok_poskos(): void
+    {
+        $barang = Barang::create($this->validData());
+
+        StokPosko::create([
+            'posko_id' => 1,
+            'nama_posko' => 'Posko Uji',
+            'barang_id' => $barang->id,
+            'kode_barang' => 'BRG-UJI-001',
+            'nama_barang' => $barang->nama,
+            'kategori' => $barang->kategori,
+            'satuan' => $barang->satuan,
+            'jumlah_stok' => 5,
+            'batas_minimum' => 1,
+            'memiliki_transaksi' => true,
+        ]);
+
+        $this->delete(route('barang.destroy', $barang))
+            ->assertRedirect(route('barang.index'))
+            ->assertSessionHas('success', 'Barang yang sudah dipakai tidak dapat dihapus dan telah dinonaktifkan.');
+
+        $this->assertDatabaseHas('barang', [
+            'id' => $barang->id,
+            'aktif' => false,
+        ]);
+        $this->assertDatabaseHas('stok_poskos', [
+            'barang_id' => $barang->id,
+            'kode_barang' => 'BRG-UJI-001',
+        ]);
     }
 
     private function validData(array $overrides = []): array
