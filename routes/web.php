@@ -117,11 +117,16 @@ Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
 });
 
 // DAHIF-3
-Route::middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])->group(function () {
-    Route::resource('relawan/pengungsi', PengungsiController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
-        ->parameters(['pengungsi' => 'pengungsi'])
-        ->names('pengungsi');
+Route::middleware('auth')->group(function () {
+    Route::get('relawan/pengungsi', [PengungsiController::class, 'index'])
+        ->middleware('peran:Admin BPBD,Relawan Posko')
+        ->name('pengungsi.index');
+
+    Route::middleware('peran:Relawan Posko')->group(function () {
+        Route::post('relawan/pengungsi', [PengungsiController::class, 'store'])->name('pengungsi.store');
+        Route::put('relawan/pengungsi/{pengungsi}', [PengungsiController::class, 'update'])->name('pengungsi.update');
+        Route::delete('relawan/pengungsi/{pengungsi}', [PengungsiController::class, 'destroy'])->name('pengungsi.destroy');
+    });
 });
 
 // DAHIF-5

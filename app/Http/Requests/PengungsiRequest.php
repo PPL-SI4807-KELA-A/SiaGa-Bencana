@@ -12,7 +12,8 @@ class PengungsiRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        // Admin BPBD hanya boleh melihat; hanya Relawan Posko yang boleh mengelola.
+        return Pengungsi::bolehKelola($this->user());
     }
 
     public function rules(): array
@@ -48,7 +49,7 @@ class PengungsiRequest extends FormRequest
 
             $pengungsi = $this->route('pengungsi');
             $pengungsi = $pengungsi instanceof Pengungsi ? $pengungsi : null;
-            $poskoId = $pengungsi?->posko_id ?? Pengungsi::POSKO_DUMMY_ID;
+            $poskoId = (int) ($pengungsi?->posko_id ?? $this->user()->posko_id);
 
             // NIK hanya boleh terdaftar aktif di satu posko.
             $nik = $this->input('nik');
@@ -71,7 +72,9 @@ class PengungsiRequest extends FormRequest
 
             $posko = Pengungsi::infoPosko($poskoId);
 
-            if (! $posko['beroperasi']) {
+            if (! $posko['ditemukan']) {
+                $validator->errors()->add('kapasitas', 'Data posko tidak ditemukan.');
+            } elseif (! $posko['beroperasi']) {
                 $validator->errors()->add('kapasitas', 'Posko sedang tidak beroperasi, pengungsi tidak dapat ditempatkan.');
             } elseif ($posko['sisa'] <= 0) {
                 $validator->errors()->add('kapasitas', 'Posko sudah penuh, pengungsi tidak dapat ditempatkan.');
