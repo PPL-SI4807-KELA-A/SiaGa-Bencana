@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class Pengungsi extends Model
 {
@@ -13,26 +11,16 @@ class Pengungsi extends Model
 
     public const KELOMPOK_USIA = ['Balita', 'Anak', 'Dewasa', 'Lansia'];
 
-    public const STATUS = ['Aktif', 'Pindah Posko', 'Kembali ke Rumah', 'Dirujuk'];
+    public const STATUS = ['Aktif', 'Pindah Posko', 'Kembali ke Rumah', 'Dirujuk ke Fasilitas Kesehatan'];
 
     public const WARNA_STATUS = [
         'Aktif' => 'pill-aktif',
         'Pindah Posko' => 'pill-warn',
-        'Dirujuk' => 'pill-warn',
+        'Dirujuk ke Fasilitas Kesehatan' => 'pill-warn',
         'Kembali ke Rumah' => 'pill-muted',
     ];
 
-    /**
-     * Sementara belum ada login Relawan dan tabel posko (PBI-02 milik Dhafa),
-     * semua pengungsi dicatat di satu posko dummy ini.
-     */
-    public const POSKO_DUMMY_ID = 1;
-
-    public const POSKO_DUMMY = [
-        'nama' => 'Posko Taman Air Bojongsoang',
-        'wilayah' => 'Kec. Bojongsoang',
-        'kapasitas' => 250,
-    ];
+    public const PERAN_ADMIN = 'Admin BPBD';
 
     protected $table = 'pengungsi';
 
@@ -62,28 +50,35 @@ class Pengungsi extends Model
         return Attribute::make(set: fn ($v) => ($v === null || trim((string) $v) === '') ? null : trim((string) $v));
     }
 
+    public static function adalahAdmin($user): bool
+    {
+        return $user !== null && $user->role === self::PERAN_ADMIN;
+    }
+
+    /** Boleh tambah/ubah/hapus: akun non-Admin yang punya posko_id (Relawan Posko). */
+    public static function bolehKelola($user): bool
+    {
+        return $user !== null && ! self::adalahAdmin($user) && (int) $user->posko_id > 0;
+    }
+
+    /** Peta id posko => nama posko, dibaca dari tabel posko. */
+    public static function daftarNamaPosko(): array
+    {
+        return Posko::query()->pluck('nama_posko', 'id')->all();
+    }
+
     /**
-     * Ringkasan kapasitas posko. Memakai tabel `posko` (PBI-02) bila sudah ada,
-     * kalau belum memakai data dummy di POSKO_DUMMY. Tidak ada foreign key.
+     * Ringkasan kapasitas satu posko. Membaca kolom nama_posko, kapasitas, dan
+     * status_operasional dari tabel posko (PBI-02), tanpa foreign key.
      */
     public static function infoPosko(int $poskoId): array
     {
-        $nama = self::POSKO_DUMMY['nama'];
-        $wilayah = self::POSKO_DUMMY['wilayah'];
-        $kapasitas = self::POSKO_DUMMY['kapasitas'];
-        $beroperasi = true;
+        $posko = Posko::query()->find($poskoId);
 
-        if (Schema::hasTable('posko')
-            && Schema::hasColumns('posko', ['id', 'nama', 'kapasitas_maksimum', 'beroperasi'])) {
-            $row = DB::table('posko')->where('id', $poskoId)->first();
-
-            if ($row) {
-                $nama = $row->nama;
-                $kapasitas = (int) $row->kapasitas_maksimum;
-                $beroperasi = (bool) $row->beroperasi;
-                $wilayah = '';
-            }
-        }
+        $ditemukan = $posko !== null;
+        $nama = $posko?->nama_posko ?? 'Posko #'.$poskoId;
+        $kapasitas = (int) ($posko?->kapasitas ?? 0);
+        $beroperasi = $posko?->status_operasional === 'Beroperasi';
 
         $terisi = static::query()->where('posko_id', $poskoId)->where('status', 'Aktif')->count();
         $sisa = max($kapasitas - $terisi, 0);
@@ -97,6 +92,6 @@ class Pengungsi extends Model
             $label = 'Siap';
         }
 
-        return compact('nama', 'wilayah', 'kapasitas', 'beroperasi', 'terisi', 'sisa', 'persen', 'label');
+        return compact('ditemukan', 'nama', 'kapasitas', 'beroperasi', 'terisi', 'sisa', 'persen', 'label');
     }
 }

@@ -2,16 +2,18 @@
 
 @section('title', 'Data Pengungsi')
 @section('judul', 'Data Pengungsi')
-@section('subjudul', $posko['nama'])
+@section('subjudul', $subjudul)
 @section('menu_aktif', 'pengungsi')
 
 @php
     $editId = old('_pengungsi_id');
-    $bukaModal = $errors->any() && $editId !== null;
+    $bukaModal = $bisaKelola && $errors->any() && $editId !== null;
     $modalEdit = $bukaModal && $editId !== 'baru';
     $formAction = $modalEdit ? route('pengungsi.update', $editId) : route('pengungsi.store');
-    $warnaBadge = ['Siap' => 'badge-siap', 'Hampir Penuh' => 'badge-hampir', 'Penuh' => 'badge-penuh'][$posko['label']];
-    $warnaBar = ['Siap' => '#4F7A3A', 'Hampir Penuh' => '#C98512', 'Penuh' => '#B3412F'][$posko['label']];
+    if ($posko) {
+        $warnaBadge = ['Siap' => 'badge-siap', 'Hampir Penuh' => 'badge-hampir', 'Penuh' => 'badge-penuh'][$posko['label']];
+        $warnaBar = ['Siap' => '#4F7A3A', 'Hampir Penuh' => '#C98512', 'Penuh' => '#B3412F'][$posko['label']];
+    }
     $jumlahBerat = count($beratIds);
 @endphp
 
@@ -57,6 +59,7 @@
     {{-- RINGKASAN: sisa kapasitas + kelompok usia + kondisi berat (Gambar 4.7) --}}
     <div class="row g-3 mb-3">
         <div class="col-lg-5">
+            @if ($posko)
             <div class="sg-card p-3 h-100 d-flex align-items-center gap-3">
                 <div class="text-center">
                     <div class="big-num">{{ $posko['sisa'] }}</div>
@@ -73,6 +76,18 @@
                     <div class="stat-label mt-2">{{ $posko['terisi'] }} dari {{ $posko['kapasitas'] }} jiwa terisi ({{ $posko['persen'] }}%)</div>
                 </div>
             </div>
+            @else
+            <div class="sg-card p-3 h-100 d-flex align-items-center gap-3">
+                <div class="text-center">
+                    <div class="big-num">{{ $totalAktif }}</div>
+                    <div class="stat-label">jiwa</div>
+                </div>
+                <div>
+                    <span class="fw-bold">Pengungsi aktif di semua posko</span>
+                    <div class="stat-label mt-1">Pilih posko pada filter untuk melihat sisa kapasitasnya.</div>
+                </div>
+            </div>
+            @endif
         </div>
         <div class="col-lg-7">
             <div class="sg-card p-3 h-100 d-flex flex-wrap align-items-center gap-2">
@@ -105,15 +120,25 @@
                     <span class="input-group-text bg-white" style="border-color:#E6D8C3;"><i class="bi bi-search"></i></span>
                     <input type="search" name="q" value="{{ $cari }}" class="form-control" placeholder="Cari nama atau alamat" aria-label="Cari nama atau alamat">
                 </div>
-                <select name="status" class="form-select" style="width: 170px;" aria-label="Filter status" onchange="this.form.submit()">
+                @if ($admin)
+                    <select name="posko" class="form-select" style="width: 200px;" aria-label="Filter posko" onchange="this.form.submit()">
+                        <option value="">Semua posko</option>
+                        @foreach ($daftarPosko as $idPosko => $labelPosko)
+                            <option value="{{ $idPosko }}" @selected((int) $poskoId === (int) $idPosko)>{{ $labelPosko }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                <select name="status" class="form-select" style="width: 250px;" aria-label="Filter status" onchange="this.form.submit()">
                     <option value="">Semua status</option>
                     @foreach ($statusList as $s)
                         <option value="{{ $s }}" @selected($filterStatus === $s)>{{ $s }}</option>
                     @endforeach
                 </select>
-                <button type="button" class="btn btn-sg" data-bs-toggle="modal" data-bs-target="#modalPengungsi">
-                    <i class="bi bi-plus-lg me-1"></i>Tambah Pengungsi
-                </button>
+                @if ($bisaKelola)
+                    <button type="button" class="btn btn-sg" data-bs-toggle="modal" data-bs-target="#modalPengungsi">
+                        <i class="bi bi-plus-lg me-1"></i>Tambah Pengungsi
+                    </button>
+                @endif
             </form>
         </div>
 
@@ -128,11 +153,12 @@
                     <thead>
                         <tr>
                             <th>Nama</th>
+                            @if ($admin)<th>Posko</th>@endif
                             <th>Jenis Kelamin</th>
                             <th>Kelompok Usia</th>
                             <th>Alamat Asal</th>
                             <th>Status</th>
-                            <th class="text-end">Aksi</th>
+                            @if ($bisaKelola)<th class="text-end">Aksi</th>@endif
                         </tr>
                     </thead>
                     <tbody>
@@ -144,10 +170,12 @@
                                         <span class="chip-berat"><i class="bi bi-heart-pulse-fill me-1"></i>Berat</span>
                                     @endif
                                 </td>
+                                @if ($admin)<td>{{ $namaPosko[$p->posko_id] ?? 'Posko #'.$p->posko_id }}</td>@endif
                                 <td>{{ $p->jenis_kelamin }}</td>
                                 <td>{{ $p->kelompok_usia }}</td>
                                 <td>{{ $p->alamat_asal }}</td>
                                 <td><span class="pill {{ \App\Models\Pengungsi::WARNA_STATUS[$p->status] ?? 'pill-muted' }}">{{ $p->status }}</span></td>
+                                @if ($bisaKelola)
                                 <td class="text-end text-nowrap">
                                     <button type="button" class="btn-icon" data-bs-toggle="modal" data-bs-target="#modalPengungsi"
                                             data-update-url="{{ route('pengungsi.update', $p) }}"
@@ -164,6 +192,7 @@
                                             data-nama="{{ $p->nama }}"
                                             aria-label="Hapus {{ $p->nama }}"><i class="bi bi-trash"></i></button>
                                 </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -180,6 +209,7 @@
     </div>
 </div>
 
+@if ($bisaKelola)
 {{-- MODAL TAMBAH / UBAH (Gambar 4.8) --}}
 <div class="modal fade" id="modalPengungsi" tabindex="-1" aria-labelledby="judulModalPengungsi" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -260,7 +290,7 @@
                         @error('status')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @else
-                            <div class="form-text">Aktif, Pindah Posko, Kembali ke Rumah, atau Dirujuk.</div>
+                            <div class="form-text">Aktif, Pindah Posko, Kembali ke Rumah, atau Dirujuk ke Fasilitas Kesehatan.</div>
                         @enderror
                     </div>
                 </div>
@@ -296,9 +326,11 @@
         </div>
     </div>
 </div>
+@endif
 @endsection
 
 @push('scripts')
+@if ($bisaKelola)
 <script>
     (function () {
         const modalEl = document.getElementById('modalPengungsi');
@@ -341,4 +373,5 @@
         }
     })();
 </script>
+@endif
 @endpush
