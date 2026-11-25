@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - SiaGa Bencana')
+@section('title', 'Dasbor')
 @section('menu_aktif', 'dasbor')
 
 @section('content')

@@ -155,36 +155,35 @@
 <body>
 @php
     // ===== Nama & peran pengguna login =====
-    // Diambil dari Auth::user() bila CHORE Login (Dhafa) sudah mengisi sesi.
-    // Kolom 'name' diasumsikan sesuai konvensi default Laravel (users.name).
-    // Field peran (mis. users.role) BELUM ada acuannya -> fallback 'Admin BPBD'
-    // dan perlu disepakati dengan Dhafa saat CHORE Login selesai.
-    $namaUser  = Auth::check() ? Auth::user()->name : 'Tamu';
-    $peranUser = Auth::check() && isset(Auth::user()->role) ? Auth::user()->role : 'Admin BPBD';
-    $inisial   = collect(explode(' ', trim($namaUser)))
+    // Tamu (belum login) tidak punya peran: label peran tidak ditampilkan.
+    // Kolom peran dibaca dari users.peran (fallback users.role bila namanya berbeda).
+    $namaUser    = Auth::check() ? Auth::user()->name : 'Tamu';
+    $peranUser   = Auth::check() ? (Auth::user()->peran ?? Auth::user()->role ?? null) : null;
+    $adalahAdmin = $peranUser === 'Admin BPBD';
+    $inisial     = collect(explode(' ', trim($namaUser)))
         ->filter()
         ->map(fn ($kata) => mb_strtoupper(mb_substr($kata, 0, 1)))
         ->take(2)
         ->implode('');
-    $inisial   = $inisial !== '' ? $inisial : 'U';
+    $inisial     = $inisial !== '' ? $inisial : 'U';
 
     $badgeVerifikasi = 5;
 
-    // Menu khusus peran Admin BPBD, sesuai mockup Figma.
-    // 'route' diisi nama route bila sudah pasti ada (DAHIF-1: wilayah-terdampak.index).
-    // Menu lain 'route' => null dulu, menunggu kabar nama route dari PIC masing-masing PBI.
+    // Menu sesuai mockup Figma.
+    // 'hanya_admin' => true : menu hanya tampil untuk Admin BPBD (Relawan Posko tidak melihatnya).
+    // 'route' => null       : route belum ada, menunggu kabar dari PIC masing-masing PBI.
     $menu = [
         'Utama' => [
             ['key' => 'dasbor', 'label' => 'Dasbor', 'icon' => 'bi-grid-1x2', 'route' => 'dasbor'],
         ],
         'Wilayah & Posko' => [
-            ['key' => 'wilayah', 'label' => 'Wilayah Terdampak', 'icon' => 'bi-geo-alt', 'route' => 'wilayah-terdampak.index'],
-            ['key' => 'posko', 'label' => 'Data Posko', 'icon' => 'bi-house-door', 'route' => 'posko.index'],
-            ['key' => 'fasilitas', 'label' => 'Fasilitas Posko', 'icon' => 'bi-building', 'route' => null],
+            ['key' => 'wilayah', 'label' => 'Wilayah Terdampak', 'icon' => 'bi-geo-alt', 'route' => 'wilayah-terdampak.index', 'hanya_admin' => true],
+            ['key' => 'posko', 'label' => 'Data Posko', 'icon' => 'bi-house-door', 'route' => 'posko.index', 'hanya_admin' => true],
+            ['key' => 'fasilitas', 'label' => 'Fasilitas Posko', 'icon' => 'bi-building', 'route' => null, 'hanya_admin' => true],
             ['key' => 'pengungsi', 'label' => 'Data Pengungsi', 'icon' => 'bi-people', 'route' => 'pengungsi.index'],
         ],
         'Logistik' => [
-            ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'route' => 'barang.index'],
+            ['key' => 'barang', 'label' => 'Data Barang', 'icon' => 'bi-tags', 'route' => 'barang.index', 'hanya_admin' => true],
             ['key' => 'sumber', 'label' => 'Sumber Bantuan', 'icon' => 'bi-gift', 'route' => 'sumber-bantuan.index'],
             ['key' => 'stok', 'label' => 'Stok Logistik', 'icon' => 'bi-box-seam', 'route' => 'stok-posko.index'],
             ['key' => 'penerimaan', 'label' => 'Penerimaan', 'icon' => 'bi-box-arrow-in-down', 'route' => null],
@@ -195,18 +194,27 @@
             ['key' => 'tindaklanjut', 'label' => 'Tindak Lanjut Permintaan', 'icon' => 'bi-list-check', 'route' => null],
         ],
         'Laporan' => [
-            ['key' => 'kategori', 'label' => 'Kategori Bencana', 'icon' => 'bi-bookmark', 'route' => 'kategori-bencana.index'],
-            ['key' => 'kejadian', 'label' => 'Laporan Kejadian', 'icon' => 'bi-file-earmark-text', 'route' => 'laporan-kejadian.index'],
-            ['key' => 'verifikasi', 'label' => 'Verifikasi Laporan', 'icon' => 'bi-patch-check', 'route' => null, 'badge' => $badgeVerifikasi],
+            ['key' => 'kategori', 'label' => 'Kategori Bencana', 'icon' => 'bi-bookmark', 'route' => 'kategori-bencana.index', 'hanya_admin' => true],
+            ['key' => 'kejadian', 'label' => 'Laporan Kejadian', 'icon' => 'bi-file-earmark-text', 'route' => 'laporan-kejadian.index', 'hanya_admin' => true],
+            ['key' => 'verifikasi', 'label' => 'Verifikasi Laporan', 'icon' => 'bi-patch-check', 'route' => null, 'badge' => $badgeVerifikasi, 'hanya_admin' => true],
         ],
         'Informasi Publik' => [
-            ['key' => 'pengumuman', 'label' => 'Pengumuman', 'icon' => 'bi-newspaper', 'route' => null],
-            ['key' => 'kontak', 'label' => 'Kontak Layanan', 'icon' => 'bi-telephone', 'route' => null],
+            ['key' => 'pengumuman', 'label' => 'Pengumuman', 'icon' => 'bi-newspaper', 'route' => null, 'hanya_admin' => true],
+            ['key' => 'kontak', 'label' => 'Kontak Layanan', 'icon' => 'bi-telephone', 'route' => null, 'hanya_admin' => true],
         ],
         'Sistem' => [
             ['key' => 'keluar', 'label' => 'Keluar', 'icon' => 'bi-box-arrow-left', 'route' => 'logout'],
         ],
     ];
+
+    // Relawan Posko tidak melihat menu khusus Admin; section yang jadi kosong ikut disembunyikan.
+    $menu = collect($menu)
+        ->map(fn ($items) => collect($items)
+            ->filter(fn ($item) => $adalahAdmin || empty($item['hanya_admin']))
+            ->values()
+            ->all())
+        ->filter(fn ($items) => count($items) > 0)
+        ->all();
 
     // Halaman anak menentukan menu aktif lewat @section('menu_aktif', 'dasbor')
     $menuAktif = trim($__env->yieldContent('menu_aktif'));
@@ -228,7 +236,9 @@
                     <text x="78" y="51" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13" font-weight="500" letter-spacing="2.2" fill="#E6CDB4">BENCANA</text>
                 </svg>
             </div>
-            <p class="brand-role">{{ $peranUser }}</p>
+            @if ($peranUser)
+                <p class="brand-role">{{ $peranUser }}</p>
+            @endif
         </div>
 
         <nav class="sidebar-nav">
@@ -264,13 +274,17 @@
             @endforeach
         </nav>
 
+        @auth
         <div class="sidebar-profile">
             <div class="avatar">{{ $inisial }}</div>
             <div class="overflow-hidden">
                 <div class="profile-name text-truncate">{{ $namaUser }}</div>
-                <div class="profile-role text-truncate">{{ $peranUser }}</div>
+                @if ($peranUser)
+                    <div class="profile-role text-truncate">{{ $peranUser }}</div>
+                @endif
             </div>
         </div>
+        @endauth
     </aside>
     <div class="sidebar-backdrop" onclick="document.body.classList.remove('sidebar-open')"></div>
 
@@ -288,11 +302,15 @@
                 </div>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <button type="button" class="icon-btn" aria-label="Notifikasi">
-                    <i class="bi bi-bell"></i>
-                    <span class="dot">{{ $badgeVerifikasi }}</span>
-                </button>
-                <div class="avatar">{{ $inisial }}</div>
+                @if ($adalahAdmin)
+                    <button type="button" class="icon-btn" aria-label="Notifikasi">
+                        <i class="bi bi-bell"></i>
+                        <span class="dot">{{ $badgeVerifikasi }}</span>
+                    </button>
+                @endif
+                @auth
+                    <div class="avatar">{{ $inisial }}</div>
+                @endauth
             </div>
         </header>
 
