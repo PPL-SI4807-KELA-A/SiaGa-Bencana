@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Barang;
 use App\Models\StokPosko;
 use App\Models\User;
 use App\Services\StokService;
@@ -61,6 +62,16 @@ class StokPoskoTest extends TestCase
         ]);
     }
 
+    private function buatBarang(array $override = []): Barang
+    {
+        return Barang::create($override + [
+            'nama' => 'Beras Medium',
+            'kategori' => 'pangan',
+            'satuan' => 'karung',
+            'aktif' => true,
+        ]);
+    }
+
     public function test_relawan_hanya_melihat_stok_poskonya_sendiri(): void
     {
         $this->buatStok(['posko_id' => 1, 'nama_posko' => 'Posko Utama', 'kode_barang' => 'BRG-001', 'nama_barang' => 'Beras Posko 1']);
@@ -75,11 +86,14 @@ class StokPoskoTest extends TestCase
 
     public function test_relawan_sees_staff_layout_and_add_stock_button(): void
     {
+        $this->buatBarang();
+
         $this->actingAs($this->relawan(1))
             ->get(route('stok-posko.index'))
             ->assertOk()
             ->assertSee('Keluar')
-            ->assertSee('Tambah Barang ke Stok');
+            ->assertSee('Tambah Barang ke Stok')
+            ->assertSee('Beras Medium');
     }
 
     public function test_admin_melihat_semua_posko_dan_bisa_filter_posko(): void
@@ -126,12 +140,11 @@ class StokPoskoTest extends TestCase
 
     public function test_relawan_bisa_tambah_barang_dan_memicu_peringatan_jika_menipis(): void
     {
+        $barang = $this->buatBarang();
+
         $this->actingAs($this->relawan(1))
             ->post(route('stok-posko.store'), [
-                'kode_barang' => ' brg-010 ',
-                'nama_barang' => 'Air Mineral',
-                'kategori' => 'pangan',
-                'satuan' => 'karton',
+                'barang_id' => $barang->id,
                 'jumlah_stok' => 10,
                 'batas_minimum' => 15,
             ])
@@ -139,7 +152,11 @@ class StokPoskoTest extends TestCase
 
         $this->assertDatabaseHas('stok_poskos', [
             'posko_id' => 1,
-            'kode_barang' => 'BRG-010',
+            'barang_id' => $barang->id,
+            'kode_barang' => null,
+            'nama_barang' => 'Beras Medium',
+            'kategori' => 'pangan',
+            'satuan' => 'karung',
             'jumlah_stok' => 10,
             'batas_minimum' => 15,
         ]);
@@ -150,20 +167,33 @@ class StokPoskoTest extends TestCase
             ->assertSee('Di bawah minimum');
     }
 
-    public function test_relawan_tidak_bisa_tambah_barang_duplikat_di_posko_yang_sama(): void
+    public function test_relawan_tidak_bisa_memilih_barang_nonaktif(): void
     {
-        $this->buatStok(['posko_id' => 1, 'kode_barang' => 'BRG-001']);
+        $barangNonaktif = $this->buatBarang(['aktif' => false]);
 
         $this->actingAs($this->relawan(1))
             ->post(route('stok-posko.store'), [
-                'kode_barang' => 'BRG-001',
-                'nama_barang' => 'Beras Duplikat',
-                'kategori' => 'pangan',
-                'satuan' => 'karung',
+                'barang_id' => $barangNonaktif->id,
+                'jumlah_stok' => 10,
+                'batas_minimum' => 5,
+            ])
+            ->assertSessionHasErrors('barang_id');
+
+        $this->assertDatabaseMissing('stok_poskos', ['barang_id' => $barangNonaktif->id]);
+    }
+
+    public function test_relawan_tidak_bisa_tambah_barang_duplikat_di_posko_yang_sama(): void
+    {
+        $barang = $this->buatBarang();
+        $this->buatStok(['posko_id' => 1, 'barang_id' => $barang->id, 'kode_barang' => null]);
+
+        $this->actingAs($this->relawan(1))
+            ->post(route('stok-posko.store'), [
+                'barang_id' => $barang->id,
                 'jumlah_stok' => 20,
                 'batas_minimum' => 5,
             ])
-            ->assertSessionHasErrors('kode_barang');
+            ->assertSessionHasErrors('barang_id');
     }
 
     public function test_relawan_bisa_mengubah_batas_minimum(): void

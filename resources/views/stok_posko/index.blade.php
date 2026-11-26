@@ -81,7 +81,10 @@
                 <tr class="{{ $item->isMenipis() ? 'table-danger' : '' }}">
                     <td>
                         <div class="fw-semibold">{{ $item->nama_barang }}</div>
-                        <div class="small text-muted">{{ $item->kode_barang }} &middot; {{ ucfirst($item->kategori) }}</div>
+                        <div class="small text-muted">
+                            @if ($item->kode_barang) {{ $item->kode_barang }} &middot; @endif
+                            {{ ucfirst($item->kategori) }}
+                        </div>
                     </td>
                     @unless ($isRelawan) <td>{{ $item->nama_posko }}</td> @endunless
                     <td class="text-end fw-semibold">{{ number_format($item->jumlah_stok) }} {{ $item->satuan }}</td>
@@ -159,30 +162,20 @@
                 @endif
 
                 <div class="row g-3">
-                    <div class="col-md-5">
-                        <label class="form-label" for="kode_barang">Kode barang <span class="text-danger">*</span></label>
-                        <input type="text" id="kode_barang" name="kode_barang" value="{{ old('kode_barang') }}"
-                               class="form-control @error('kode_barang') is-invalid @enderror" required>
-                    </div>
-                    <div class="col-md-7">
-                        <label class="form-label" for="nama_barang">Nama barang <span class="text-danger">*</span></label>
-                        <input type="text" id="nama_barang" name="nama_barang" value="{{ old('nama_barang') }}"
-                               class="form-control @error('nama_barang') is-invalid @enderror" required>
-                    </div>
-                    <div class="col-md-7">
-                        <label class="form-label" for="kategori">Kategori <span class="text-danger">*</span></label>
-                        <select id="kategori" name="kategori"
-                                class="form-select @error('kategori') is-invalid @enderror" required>
-                            <option value="">Pilih kategori</option>
-                            @foreach ($kategori as $k)
-                                <option value="{{ $k }}" @selected(old('kategori') === $k)>{{ ucfirst($k) }}</option>
+                    <div class="col-12">
+                        <label class="form-label" for="barang_id">Barang dari Data Barang <span class="text-danger">*</span></label>
+                        <select id="barang_id" name="barang_id"
+                                class="form-select @error('barang_id') is-invalid @enderror" required>
+                            <option value="">Pilih barang</option>
+                            @foreach ($barangAktif as $barang)
+                                <option value="{{ $barang->id }}" @selected((string) old('barang_id') === (string) $barang->id)>
+                                    {{ $barang->nama }} · {{ ucfirst($barang->kategori) }} ({{ $barang->satuan }})
+                                </option>
                             @endforeach
                         </select>
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label" for="satuan">Satuan <span class="text-danger">*</span></label>
-                        <input type="text" id="satuan" name="satuan" value="{{ old('satuan') }}"
-                               class="form-control @error('satuan') is-invalid @enderror" required>
+                        @if ($barangAktif->isEmpty())
+                            <div class="form-text">Belum ada barang aktif. Minta Admin BPBD menambahkan Data Barang terlebih dahulu.</div>
+                        @endif
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="jumlah_stok">Jumlah stok awal <span class="text-danger">*</span></label>
