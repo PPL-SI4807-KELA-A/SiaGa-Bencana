@@ -24,6 +24,15 @@ class PoskoTest extends TestCase
         $this->get(route('posko.create'))->assertOk();
     }
 
+    public function test_create_form_includes_desa_mapping_per_kecamatan(): void
+    {
+        $this->get(route('posko.create'))
+            ->assertOk()
+            ->assertSee('const desaPerKecamatan =', false)
+            ->assertSee(json_encode(Posko::DESA_PER_KECAMATAN, JSON_UNESCAPED_UNICODE), false)
+            ->assertSee('Pilih kecamatan terlebih dahulu');
+    }
+
     public function test_valid_posko_is_saved_as_active_and_operating(): void
     {
         $this->post(route('posko.store'), $this->validData())
