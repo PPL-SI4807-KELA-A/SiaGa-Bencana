@@ -1,3 +1,8 @@
+@php
+    $kecamatanTerpilih = old('kecamatan', $posko->kecamatan ?? '');
+    $desaTerpilih = old('desa_kelurahan', $posko->desa_kelurahan ?? '');
+@endphp
+
 <form method="POST" action="{{ $formAction }}">
     @csrf
     @if ($formMethod !== 'POST')
@@ -29,15 +34,10 @@
         </div>
         <div class="col-md-6 mb-3">
             <label for="desa_kelurahan" class="form-label">Desa/Kelurahan <span class="text-danger">*</span></label>
-            <select id="desa_kelurahan" name="desa_kelurahan" class="form-select @error('desa_kelurahan') is-invalid @enderror" required>
-                <option value="">Pilih desa/kelurahan</option>
-                @foreach ($desaPerKecamatan as $namaKecamatan => $daftarDesa)
-                    <optgroup label="Kecamatan {{ $namaKecamatan }}">
-                        @foreach ($daftarDesa as $desa)
-                            <option value="{{ $desa }}" @selected(old('desa_kelurahan', $posko->desa_kelurahan ?? null) === $desa)>{{ $desa }}</option>
-                        @endforeach
-                    </optgroup>
-                @endforeach
+            <select id="desa_kelurahan" name="desa_kelurahan"
+                    class="form-select @error('desa_kelurahan') is-invalid @enderror"
+                    @disabled($kecamatanTerpilih === '') required>
+                <option value="">Pilih kecamatan terlebih dahulu</option>
             </select>
             @error('desa_kelurahan') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
@@ -74,3 +74,38 @@
         <a href="{{ route('posko.index') }}" class="btn btn-outline-secondary">Batal</a>
     </div>
 </form>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const kecamatanSelect = document.getElementById('kecamatan');
+        const desaSelect = document.getElementById('desa_kelurahan');
+        const desaPerKecamatan = @json($desaPerKecamatan);
+        const desaAwal = @json($desaTerpilih);
+
+        function isiPilihanDesa(desaTerpilih = '') {
+            const daftarDesa = desaPerKecamatan[kecamatanSelect.value] || [];
+            desaSelect.replaceChildren();
+
+            if (!kecamatanSelect.value || daftarDesa.length === 0) {
+                desaSelect.add(new Option('Pilih kecamatan terlebih dahulu', ''));
+                desaSelect.disabled = true;
+                return;
+            }
+
+            desaSelect.add(new Option('Pilih desa/kelurahan', ''));
+            daftarDesa.forEach(function (desa) {
+                const option = new Option(desa, desa);
+                option.selected = desa === desaTerpilih;
+                desaSelect.add(option);
+            });
+            desaSelect.disabled = false;
+        }
+
+        isiPilihanDesa(desaAwal);
+        kecamatanSelect.addEventListener('change', function () {
+            isiPilihanDesa();
+        });
+    });
+</script>
+@endpush
