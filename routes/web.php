@@ -12,6 +12,7 @@ use App\Http\Controllers\LaporanKejadianController;
 use App\Http\Controllers\LaporanKejadianPublikController;
 use App\Http\Controllers\PengungsiController;
 use App\Http\Controllers\StokPoskoController;
+use App\Http\Controllers\FasilitasPoskoController;
 use App\Models\PermintaanMendesak;
 
 Route::redirect('/', '/posko');
@@ -114,6 +115,17 @@ Route::prefix('lapor-kejadian')->name('laporan-kejadian.publik.')->group(functio
 Route::middleware(['auth', 'peran:Admin BPBD'])->group(function () {
     Route::get('laporan-kejadian', [LaporanKejadianController::class, 'index'])->name('laporan-kejadian.index');
     Route::get('laporan-kejadian/{laporan}', [LaporanKejadianController::class, 'show'])->name('laporan-kejadian.show');
+});
+
+// DAHIF-10
+Route::middleware(['auth', 'peran:Admin BPBD,Relawan Posko'])->group(function () {
+    Route::get('relawan/fasilitas-posko', [FasilitasPoskoController::class, 'index'])
+        ->name('fasilitas-posko.index');
+});
+Route::middleware(['auth', 'peran:Relawan Posko'])->group(function () {
+    Route::resource('relawan/fasilitas-posko', FasilitasPoskoController::class)
+        ->except(['show', 'index'])
+        ->names('fasilitas-posko');
 });
 
 // DAHIF-3
