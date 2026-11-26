@@ -13,7 +13,7 @@ class StokService
     public function tambahBarang(array $data): StokPosko
     {
         $payload = Arr::only($data, [
-            'posko_id', 'nama_posko', 'kode_barang', 'nama_barang',
+            'posko_id', 'nama_posko', 'barang_id', 'kode_barang', 'nama_barang',
             'kategori', 'satuan', 'jumlah_stok', 'batas_minimum',
         ]);
 
@@ -26,8 +26,10 @@ class StokService
         try {
             return StokPosko::create($payload + ['memiliki_transaksi' => false]);
         } catch (UniqueConstraintViolationException) {
+            $field = array_key_exists('barang_id', $payload) ? 'barang_id' : 'kode_barang';
+
             throw ValidationException::withMessages([
-                'kode_barang' => 'Barang ini sudah ada di daftar stok posko.',
+                $field => 'Barang ini sudah ada di daftar stok posko Anda.',
             ]);
         }
     }

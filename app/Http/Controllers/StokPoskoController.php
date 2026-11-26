@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Barang;
 use App\Models\StokPosko;
 use App\Services\StokService;
 use Illuminate\Http\Request;
@@ -11,8 +12,6 @@ class StokPoskoController extends Controller
 {
     private const ROLE_ADMIN = 'Admin BPBD';
     private const ROLE_RELAWAN = 'Relawan Posko';
-
-    private const KATEGORI = ['pangan', 'sandang', 'obat-obatan', 'perlengkapan bayi', 'kebersihan'];
 
     public function __construct(private StokService $stokService)
     {
@@ -86,12 +85,16 @@ class StokPoskoController extends Controller
             ? collect()
             : StokPosko::query()->select('posko_id', 'nama_posko')->distinct()->orderBy('nama_posko')->get();
 
+        $barangAktif = $isRelawan
+            ? Barang::query()->where('aktif', true)->orderBy('nama')->get(['id', 'nama', 'kategori', 'satuan'])
+            : collect();
+
         return view('stok_posko.index', [
             'items' => $items,
             'jumlahMenipis' => $jumlahMenipis,
             'daftarPosko' => $daftarPosko,
+            'barangAktif' => $barangAktif,
             'isRelawan' => $isRelawan,
-            'kategori' => self::KATEGORI,
         ]);
     }
 
@@ -99,21 +102,28 @@ class StokPoskoController extends Controller
     {
         [$poskoId, $namaPosko] = $this->relawan($request);
 
-        $request->merge(['kode_barang' => strtoupper(trim((string) $request->input('kode_barang')))]);
-
         $data = $request->validate([
-            'kode_barang' => [
-                'required', 'string', 'max:50',
-                Rule::unique('stok_poskos', 'kode_barang')->where('posko_id', $poskoId),
+            'barang_id' => [
+                'required', 'integer',
+                Rule::exists('barang', 'id')->where('aktif', true),
+                Rule::unique('stok_poskos', 'barang_id')->where('posko_id', $poskoId),
             ],
-            'nama_barang' => ['required', 'string', 'max:255'],
-            'kategori' => ['required', Rule::in(self::KATEGORI)],
-            'satuan' => ['required', 'string', 'max:30'],
             'jumlah_stok' => ['required', 'integer', 'min:0', 'max:4294967295'],
             'batas_minimum' => ['required', 'integer', 'min:0', 'max:4294967295'],
         ], $this->pesan());
 
-        $this->stokService->tambahBarang($data + [
+        $barang = Barang::query()
+            ->where('aktif', true)
+            ->findOrFail((int) $data['barang_id']);
+
+        $this->stokService->tambahBarang([
+            'barang_id' => $barang->id,
+            'kode_barang' => null,
+            'nama_barang' => $barang->nama,
+            'kategori' => $barang->kategori,
+            'satuan' => $barang->satuan,
+            'jumlah_stok' => (int) $data['jumlah_stok'],
+            'batas_minimum' => (int) $data['batas_minimum'],
             'posko_id' => $poskoId, // selalu dari akun/aktor, bukan dari input
             'nama_posko' => $namaPosko,
         ]);
@@ -170,12 +180,9 @@ class StokPoskoController extends Controller
     private function pesan(): array
     {
         return [
-            'kode_barang.required' => 'Kode barang wajib diisi.',
-            'kode_barang.unique' => 'Barang ini sudah ada di daftar stok posko Anda.',
-            'nama_barang.required' => 'Nama barang wajib diisi.',
-            'kategori.required' => 'Kategori wajib dipilih.',
-            'kategori.in' => 'Kategori tidak valid.',
-            'satuan.required' => 'Satuan wajib diisi.',
+            'barang_id.required' => 'Barang wajib dipilih dari Data Barang.',
+            'barang_id.exists' => 'Barang tidak tersedia atau sudah tidak aktif.',
+            'barang_id.unique' => 'Barang ini sudah ada di daftar stok posko Anda.',
             'jumlah_stok.required' => 'Jumlah stok wajib diisi.',
             'jumlah_stok.integer' => 'Jumlah stok harus berupa bilangan bulat.',
             'jumlah_stok.min' => 'Jumlah stok tidak boleh negatif.',
